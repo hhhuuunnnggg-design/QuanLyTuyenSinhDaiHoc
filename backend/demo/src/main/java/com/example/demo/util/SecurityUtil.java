@@ -1,23 +1,28 @@
 package com.example.demo.util;
 
-import com.example.demo.domain.response.ResLoginDTO;
-import com.nimbusds.jose.util.Base64;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.jwt.*;
-import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.context.SecurityContext;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.domain.response.ResLoginDTO;
+import com.nimbusds.jose.util.Base64;
 
 @Service
 public class SecurityUtil {
@@ -39,21 +44,17 @@ public class SecurityUtil {
     private long refreshTokenExpiration;
 
     public String createAccessToken(String email, ResLoginDTO dto) {
-//        Dữ liệu người dùng này sẽ được nhúng vào trong token →
-//        giúp backend đọc ra thông tin user mà không cần truy DB mỗi lần.
+        // Dữ liệu người dùng này sẽ được nhúng vào trong token →
+        // giúp backend đọc ra thông tin user mà không cần truy DB mỗi lần.
         ResLoginDTO.UserInsideToken userToken = new ResLoginDTO.UserInsideToken();
         userToken.setId(dto.getUser().getId());
         userToken.setEmail(dto.getUser().getEmail());
-        userToken.setName(dto.getUser().getUsername());
-        userToken.setName(dto.getUser().getFirstName());
-        userToken.setName(dto.getUser().getLastName());
-        userToken.setName(dto.getUser().getIs_admin().toString());
+        userToken.setIs_admin(dto.getUser().getIs_admin());
+        userToken.setFullName(dto.getUser().getFirstName() + " " + dto.getUser().getLastName());
 
         // thiết lập thời gian sống cho token
         Instant now = Instant.now();
         Instant validity = now.plus(this.accessTokenExpiration, ChronoUnit.SECONDS);
-
-
 
         // @formatter:off
 //        dữ liệu chính trong token
@@ -77,10 +78,9 @@ public class SecurityUtil {
         ResLoginDTO.UserInsideToken userToken = new ResLoginDTO.UserInsideToken();
         userToken.setId(dto.getUser().getId());
         userToken.setEmail(dto.getUser().getEmail());
-        userToken.setName(dto.getUser().getUsername());
-        userToken.setName(dto.getUser().getFirstName());
-        userToken.setName(dto.getUser().getLastName());
-        userToken.setName(dto.getUser().getIs_admin().toString());
+        userToken.setIs_admin(dto.getUser().getIs_admin());
+        userToken.setFullName(dto.getUser().getFirstName() + " " + dto.getUser().getLastName());
+
         // @formatter:off
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuedAt(now)
@@ -116,7 +116,9 @@ public class SecurityUtil {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         return Optional.ofNullable(extractPrincipal(securityContext.getAuthentication()));
     }
+    
     private static String extractPrincipal(Authentication authentication) {
+        
         if (authentication == null) {
             return null;
         } else if (authentication.getPrincipal() instanceof UserDetails springSecurityUser) {

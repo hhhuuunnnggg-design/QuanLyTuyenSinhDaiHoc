@@ -22,8 +22,6 @@ public class User {
     @NotBlank(message = "email không được để trống")
     String email;
 
-
-    String username;
     String password;
 
     String avatar;
@@ -51,6 +49,12 @@ public class User {
     @Transient
     public boolean isBlocked() {
         return is_blocked != null && is_blocked;
+    }
+
+    @PrePersist
+    public void handleBeforeCreate(){
+        this.createdAt= Instant.now();
+
     }
 
 

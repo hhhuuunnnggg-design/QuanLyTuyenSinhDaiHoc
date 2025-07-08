@@ -1,6 +1,7 @@
 package com.example.demo.domain.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,18 +15,19 @@ public class ResLoginDTO {
     private String accessToken;
 
     UserLogin user;
+
     @Data
     @FieldDefaults(level = AccessLevel.PRIVATE)
     @AllArgsConstructor
     @NoArgsConstructor
     public static class UserLogin {
-         long id;
-         String email;
-         String username;
-         String firstName;
-         String lastName;
-         Boolean is_admin;
+        long id;
+        String email;
+        String firstName;
+        String lastName;
+        Boolean is_admin;
     }
+
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
@@ -39,6 +41,8 @@ public class ResLoginDTO {
     public static class UserInsideToken {
         private long id;
         private String email;
-        private String name;
+        private Boolean is_admin;
+        private String fullName;
     }
+
 }
