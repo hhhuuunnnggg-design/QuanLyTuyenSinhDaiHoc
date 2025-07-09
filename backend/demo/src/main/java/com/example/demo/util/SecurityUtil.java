@@ -50,7 +50,7 @@ public class SecurityUtil {
         userToken.setId(dto.getUser().getId());
         userToken.setEmail(dto.getUser().getEmail());
         userToken.setIs_admin(dto.getUser().getIs_admin());
-        userToken.setFullName(dto.getUser().getFirstName() + " " + dto.getUser().getLastName());
+        userToken.setFullName(dto.getUser().getFullname());
 
         // thiết lập thời gian sống cho token
         Instant now = Instant.now();
@@ -79,7 +79,7 @@ public class SecurityUtil {
         userToken.setId(dto.getUser().getId());
         userToken.setEmail(dto.getUser().getEmail());
         userToken.setIs_admin(dto.getUser().getIs_admin());
-        userToken.setFullName(dto.getUser().getFirstName() + " " + dto.getUser().getLastName());
+        userToken.setFullName(dto.getUser().getFullname());
 
         // @formatter:off
         JwtClaimsSet claims = JwtClaimsSet.builder()

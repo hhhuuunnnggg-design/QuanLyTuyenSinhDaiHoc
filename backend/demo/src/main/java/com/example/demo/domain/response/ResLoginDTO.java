@@ -23,8 +23,7 @@ public class ResLoginDTO {
     public static class UserLogin {
         long id;
         String email;
-        String firstName;
-        String lastName;
+        String fullname;
         Boolean is_admin;
     }
 

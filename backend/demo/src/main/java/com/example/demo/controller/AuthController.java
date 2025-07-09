@@ -1,18 +1,5 @@
 package com.example.demo.controller;
 
-import com.example.demo.domain.User;
-import com.example.demo.domain.request.ReqLoginDTO;
-import com.example.demo.domain.response.ResCreateUserDTO;
-import com.example.demo.domain.response.ResLoginDTO;
-import com.example.demo.service.UserServices;
-import com.example.demo.util.SecurityUtil;
-
-import com.example.demo.util.annotation.ApiMessage;
-import com.example.demo.util.error.IdInvalidException;
-import jakarta.validation.Valid;
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -24,7 +11,23 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.demo.domain.User;
+import com.example.demo.domain.request.ReqLoginDTO;
+import com.example.demo.domain.response.ResCreateUserDTO;
+import com.example.demo.domain.response.ResLoginDTO;
+import com.example.demo.service.UserServices;
+import com.example.demo.util.SecurityUtil;
+import com.example.demo.util.annotation.ApiMessage;
+import com.example.demo.util.error.IdInvalidException;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -63,15 +66,13 @@ public class AuthController {
 
         ResLoginDTO res = new ResLoginDTO();
         User currentUserDB = this.userService.handleGetUserByUsername(loginDto.getEmail());
+        String fullName = currentUserDB.getLastName() + " " + currentUserDB.getFirstName();
         if (currentUserDB != null) {
             ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(
                     currentUserDB.getId(),
                     currentUserDB.getEmail(),
-
-                    currentUserDB.getFirstName(),
-                    currentUserDB.getLastName(),
-                    currentUserDB.getIs_admin()
-            );
+                    fullName,
+                    currentUserDB.getIs_admin());
             res.setUser(userLogin);
         }
 
@@ -112,9 +113,8 @@ public class AuthController {
         if (currentUserDB != null) {
             userLogin.setId(currentUserDB.getId());
             userLogin.setEmail(currentUserDB.getEmail());
+            userLogin.setFullname(currentUserDB.getLastName() + " " + currentUserDB.getFirstName());
 
-            userLogin.setFirstName(currentUserDB.getFirstName());
-            userLogin.setLastName(currentUserDB.getLastName());
             userLogin.setIs_admin(currentUserDB.getIs_admin());
             userGetAccount.setUser(userLogin);
         }
@@ -142,13 +142,12 @@ public class AuthController {
         // issue new token/set refresh token as cookies
         ResLoginDTO res = new ResLoginDTO();
         User currentUserDB = this.userService.handleGetUserByUsername(email);
+        String fullName = currentUserDB.getLastName() + " " + currentUserDB.getFirstName();
         if (currentUserDB != null) {
             ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(
                     currentUserDB.getId(),
                     currentUserDB.getEmail(),
-
-                    currentUserDB.getFirstName(),
-                    currentUserDB.getLastName(),
+                    fullName,
 
                     currentUserDB.getIs_admin()
 
