@@ -1,13 +1,18 @@
 package com.example.demo.service;
 
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.example.demo.domain.User;
 import com.example.demo.domain.response.ResCreateUserDTO;
+import com.example.demo.domain.response.ResUserDTO;
 import com.example.demo.repository.UserServiceRepository;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -26,6 +31,7 @@ public class UserServices {
         }
         return user;
     }
+
     public User handleGetUserByUsername(String username) {
         return this.userServiceRepository.findByEmail(username);
     }
@@ -60,4 +66,33 @@ public class UserServices {
         rs.setCreatedAt(user.getCreatedAt());
         return rs;
     }
+
+    // tìm 1 giá trị
+    public User handleFindByIdUser(Long id) {
+        Optional<User> UserOption = this.userServiceRepository.findById(id);
+        if (UserOption.isPresent()) {
+            return UserOption.get();
+        }
+        return null;
+    }
+
+    public ResUserDTO convertToResUserDTO(User user) {
+        return ResUserDTO.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .avatar(user.getAvatar())
+                .coverPhoto(user.getCoverPhoto())
+                .fullname(user.getFirstName() + " " + user.getLastName())
+                .dateOfBirth(user.getDateOfBirth())
+                .gender(user.getGender())
+                .work(user.getWork())
+                .education(user.getEducation())
+                .currentCity(user.getCurrent_city())
+                .hometown(user.getHometown())
+                .bio(user.getBio())
+                .isAdmin(user.getIs_admin())
+                // .isBlocked(user.isBlocked())
+                .build();
+    }
+
 }

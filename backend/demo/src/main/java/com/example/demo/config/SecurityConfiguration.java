@@ -43,16 +43,6 @@ public class SecurityConfiguration {
             HttpSecurity http,
             CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
 
-        String[] whiteList = {
-                "/",
-                "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/register",
-                "/storage/**",
-                "/api/v1/email/**",
-                "/v3/api-docs/**",
-                "/swagger-ui/**",
-                "/swagger-ui.html"
-        };
-
         http
                 // 1. Tắt CSRF (Cross-Site Request Forgery) protection
                 .csrf(c -> c.disable())
@@ -63,11 +53,10 @@ public class SecurityConfiguration {
                         authz -> authz
                                 // 3.1 Cho phép truy cập không cần xác thực cho trang chủ ("/") và trang đăng
                                 // nhập ("/login")
-                                .requestMatchers(whiteList)
-                                .permitAll() // cho pheép truy cap, khong can dang nhap
                                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll() // cho phép public
                                 // 3.2 Các request còn lại yêu cầu phải được xác thực
-                                .anyRequest().authenticated())
+                                // .anyRequest().authenticated()
+                                .anyRequest().permitAll())
                 // 4. Cấu hình OAuth2 Resource Server với JWT
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())
                         // 4.1 Đặt CustomAuthenticationEntryPoint làm entry point khi xác thực không
@@ -114,5 +103,12 @@ public class SecurityConfiguration {
         return new SecretKeySpec(keyBytes, 0, keyBytes.length,
                 SecurityUtil.JWT_ALGORITHM.getName());
     }
+
+    // @Bean
+    // public AuthenticationManager
+    // authenticationManager(AuthenticationConfiguration authConfig) throws
+    // Exception {
+    // return authConfig.getAuthenticationManager();
+    // }
 
 }
