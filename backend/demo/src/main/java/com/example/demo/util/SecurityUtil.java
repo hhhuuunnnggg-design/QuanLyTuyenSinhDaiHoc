@@ -96,6 +96,7 @@ public class SecurityUtil {
 
     // mã hóa token
     private SecretKey getSecretKey() {
+        // giải mã key
         byte[] keyBytes = Base64.from(jwtKey).decode();
         return new SecretKeySpec(keyBytes, 0, keyBytes.length,
                 JWT_ALGORITHM.getName());

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.domain.User;
 import com.example.demo.domain.response.ResCreateUserDTO;
+import com.example.demo.domain.response.ResUpdateUserDTO;
 import com.example.demo.domain.response.ResUserDTO;
 import com.example.demo.repository.UserServiceRepository;
 
@@ -62,7 +63,7 @@ public class UserServices {
         rs.setId(user.getId());
         rs.setEmail(user.getEmail());
         rs.setGender(user.getGender());
-        rs.setFullName(user.getFirstName() + " " + user.getLastName());
+        rs.setFullName(user.getLastName() + " " + user.getFirstName());
         rs.setCreatedAt(user.getCreatedAt());
         return rs;
     }
@@ -94,5 +95,104 @@ public class UserServices {
                 // .isBlocked(user.isBlocked())
                 .build();
     }
+
+    // sửa
+    public User handleUpdateUser(User updateUser) {
+        User currentUser = this.handleFindByIdUser(updateUser.getId());
+        if (currentUser != null) {
+
+            if (updateUser.getEmail() != null && !updateUser.getEmail().isBlank()) {
+                currentUser.setEmail(updateUser.getEmail());
+            }
+
+            if (updateUser.getAvatar() != null && !updateUser.getAvatar().isBlank()) {
+                currentUser.setAvatar(updateUser.getAvatar());
+            }
+
+            if (updateUser.getCoverPhoto() != null && !updateUser.getCoverPhoto().isBlank()) {
+                currentUser.setCoverPhoto(updateUser.getCoverPhoto());
+            }
+
+            if (updateUser.getFirstName() != null && !updateUser.getFirstName().isBlank()) {
+                currentUser.setFirstName(updateUser.getFirstName());
+            }
+
+            if (updateUser.getLastName() != null && !updateUser.getLastName().isBlank()) {
+                currentUser.setLastName(updateUser.getLastName());
+            }
+
+            if (updateUser.getDateOfBirth() != null) {
+                currentUser.setDateOfBirth(updateUser.getDateOfBirth());
+            }
+
+            if (updateUser.getGender() != null) {
+                currentUser.setGender(updateUser.getGender());
+            }
+
+            if (updateUser.getWork() != null && !updateUser.getWork().isBlank()) {
+                currentUser.setWork(updateUser.getWork());
+            }
+
+            if (updateUser.getEducation() != null && !updateUser.getEducation().isBlank()) {
+                currentUser.setEducation(updateUser.getEducation());
+            }
+
+            if (updateUser.getCurrent_city() != null && !updateUser.getCurrent_city().isBlank()) {
+                currentUser.setCurrent_city(updateUser.getCurrent_city());
+            }
+
+            if (updateUser.getHometown() != null && !updateUser.getHometown().isBlank()) {
+                currentUser.setHometown(updateUser.getHometown());
+            }
+
+            if (updateUser.getBio() != null && !updateUser.getBio().isBlank()) {
+                currentUser.setBio(updateUser.getBio());
+            }
+
+            return this.userServiceRepository.save(currentUser);
+        }
+        return null;
+    }
+
+    public ResUpdateUserDTO convertToResUpdateUserDTO(User user) {
+        return ResUpdateUserDTO.builder()
+                .email(user.getEmail())
+                .fullname(user.getFirstName() + " " + user.getLastName())
+                .avatar(user.getAvatar())
+                .coverPhoto(user.getCoverPhoto())
+                .dateOfBirth(user.getDateOfBirth())
+                .gender(user.getGender())
+                .work(user.getWork())
+                .education(user.getEducation())
+                .current_city(user.getCurrent_city())
+                .hometown(user.getHometown())
+                .bio(user.getBio())
+                .build();
+    }
+
+    // // tìm nhiều giá trị
+    // public ResultPaginationDTO fetchAllUser(Specification<User> spec, Pageable
+    // pageable) {
+    // Page<User> pageUser = this.userServiceRepository.findAll(spec, pageable);
+    // ResultPaginationDTO rs = new ResultPaginationDTO();
+    // ResultPaginationDTO.Meta mt = new ResultPaginationDTO.Meta();
+
+    // mt.setPage(pageable.getPageNumber() + 1);
+    // mt.setPageSize(pageable.getPageSize());
+
+    // mt.setPages(pageUser.getTotalPages());
+    // mt.setTotal(pageUser.getTotalElements());
+
+    // rs.setMeta(mt);
+
+    // // remove sensitive data
+    // List<ResUserDTO> listUser = pageUser.getContent()
+    // .stream().map(item -> this.convertToResUserDTO(item))
+    // .collect(Collectors.toList());
+
+    // rs.setResult(listUser);
+
+    // return rs;
+    // }
 
 }

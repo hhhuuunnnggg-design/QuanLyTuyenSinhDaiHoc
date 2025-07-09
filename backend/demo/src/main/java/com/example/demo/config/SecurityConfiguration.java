@@ -54,10 +54,10 @@ public class SecurityConfiguration {
                                 // 3.1 Cho phép truy cập không cần xác thực cho trang chủ ("/") và trang đăng
                                 // nhập ("/login")
                                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll() // cho phép public
+
                                 // 3.2 Các request còn lại yêu cầu phải được xác thực
-                                .anyRequest().authenticated()
-                // .anyRequest().permitAll()
-                )
+                                // .anyRequest().authenticated()
+                                .anyRequest().permitAll())
                 // 4. Cấu hình OAuth2 Resource Server với JWT
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())
                         // 4.1 Đặt CustomAuthenticationEntryPoint làm entry point khi xác thực không
@@ -99,17 +99,10 @@ public class SecurityConfiguration {
         return new NimbusJwtEncoder(new ImmutableSecret<>(getSecretKey()));
     }
 
+    // thuật toán mã hóa tự config
     private SecretKey getSecretKey() {
         byte[] keyBytes = Base64.from(jwtKey).decode();
         return new SecretKeySpec(keyBytes, 0, keyBytes.length,
                 SecurityUtil.JWT_ALGORITHM.getName());
     }
-
-    // @Bean
-    // public AuthenticationManager
-    // authenticationManager(AuthenticationConfiguration authConfig) throws
-    // Exception {
-    // return authConfig.getAuthenticationManager();
-    // }
-
 }

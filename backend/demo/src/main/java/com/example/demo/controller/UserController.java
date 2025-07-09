@@ -4,10 +4,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.domain.User;
+import com.example.demo.domain.response.ResUpdateUserDTO;
 import com.example.demo.domain.response.ResUserDTO;
 import com.example.demo.service.UserServices;
 import com.example.demo.util.annotation.ApiMessage;
@@ -37,5 +40,30 @@ public class UserController {
 
         return ResponseEntity.ok(this.userService.convertToResUserDTO(fetUser));
     }
+
+    @PutMapping("/{id}")
+    @ApiMessage("Update a user")
+    public ResponseEntity<ResUpdateUserDTO> updateUser(
+            @PathVariable Long id,
+            @RequestBody User user) throws IdInvalidException {
+        // Đồng bộ id trong path và trong object
+        user.setId(id);
+        User updatedUser = userService.handleUpdateUser(user);
+        if (updatedUser == null) {
+            throw new IdInvalidException("User với id = " + id + " không tồn tại");
+        }
+        return ResponseEntity.ok(userService.convertToResUpdateUserDTO(updatedUser));
+    }
+
+    // // tìm all user
+    // @GetMapping("")
+    // @ApiMessage("fetch all users")
+    // public ResponseEntity<?> getAllUser(
+    // @Filter Specification<User> spec,
+    // Pageable pageable) {
+    // return
+    // ResponseEntity.status(HttpStatus.OK).body(this.userService.fetchAllUser(spec,
+    // pageable));
+    // }
 
 }
