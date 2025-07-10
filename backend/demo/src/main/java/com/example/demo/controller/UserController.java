@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,11 +26,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.domain.User;
+import com.example.demo.domain.dto.ResultPaginationDTO;
 import com.example.demo.domain.response.ResUpdateUserDTO;
 import com.example.demo.domain.response.ResUserDTO;
 import com.example.demo.service.UserServices;
 import com.example.demo.util.annotation.ApiMessage;
 import com.example.demo.util.error.IdInvalidException;
+import com.turkraft.springfilter.boot.Filter;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -146,6 +151,17 @@ public class UserController {
         data.put("coverPhoto", avatarUrl);
 
         return ResponseEntity.ok(data);
+    }
+
+    // fetch all users
+    @GetMapping("/fetch-all")
+    @ApiMessage("fetch all users")
+    public ResponseEntity<ResultPaginationDTO> getAllUser(
+            @Filter Specification<User> spec,
+            Pageable pageable) {
+
+        return ResponseEntity.status(HttpStatus.OK).body(
+                this.userService.fetchAllUsers(spec, pageable));
     }
 
 }
