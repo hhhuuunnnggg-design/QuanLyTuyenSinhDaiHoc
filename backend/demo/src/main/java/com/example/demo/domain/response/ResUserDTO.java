@@ -9,6 +9,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 @Data
@@ -31,6 +32,17 @@ public class ResUserDTO {
     Instant createdAt;
     boolean isAdmin;
     boolean isBlocked;
-    // có 16 file
+    // có 16 field
+    RoleUser role;
+
+    @Data
+    @AllArgsConstructor
+    @Builder
+    @NoArgsConstructor
+    @FieldDefaults(level = AccessLevel.PRIVATE)
+    public static class RoleUser {
+        long id;
+        String name;
+    }
 
 }

@@ -51,7 +51,8 @@ public class SecurityUtil {
         userToken.setEmail(dto.getUser().getEmail());
         userToken.setIs_admin(dto.getUser().getIs_admin());
         userToken.setFullName(dto.getUser().getFullname());
-
+        // hùng tự thêm
+        userToken.setRole(dto.getUser().getRole());
         // thiết lập thời gian sống cho token
         Instant now = Instant.now();
         Instant validity = now.plus(this.accessTokenExpiration, ChronoUnit.SECONDS);
@@ -80,7 +81,9 @@ public class SecurityUtil {
         userToken.setEmail(dto.getUser().getEmail());
         userToken.setIs_admin(dto.getUser().getIs_admin());
         userToken.setFullName(dto.getUser().getFullname());
-
+        // hùng tự thêm
+        userToken.setRole(dto.getUser().getRole());
+        //userToken.setRole(dto.getUser().getRole());
         // @formatter:off
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuedAt(now)

@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.domain.User;
 import com.example.demo.domain.dto.ResultPaginationDTO;
+import com.example.demo.domain.response.ResCreateUserDTO;
 import com.example.demo.domain.response.ResUpdateUserDTO;
 import com.example.demo.domain.response.ResUserDTO;
 import com.example.demo.service.UserServices;
@@ -34,6 +35,7 @@ import com.example.demo.util.annotation.ApiMessage;
 import com.example.demo.util.error.IdInvalidException;
 import com.turkraft.springfilter.boot.Filter;
 
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -46,6 +48,22 @@ public class UserController {
 
     private UserServices userService;
     private PasswordEncoder passwordEncoder;
+
+    @PostMapping("/add-user")
+    @ApiMessage("Create a new user")
+    public ResponseEntity<ResCreateUserDTO> createNewUser(@Valid @RequestBody User postManUser)
+            throws IdInvalidException {
+        boolean isEmailExist = this.userService.isEmailExist(postManUser.getEmail());
+        if (isEmailExist) {
+            throw new IdInvalidException(
+                    "Email " + postManUser.getEmail() + "đã tồn tại, vui lòng sử dụng email khác.");
+        }
+
+        String hashPassword = this.passwordEncoder.encode(postManUser.getPassword());
+        postManUser.setPassword(hashPassword);
+        User ericUser = this.userService.handleCreateUser(postManUser);
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.userService.convertToResCreateUserDTO(ericUser));
+    }
 
     // tìm 1 giá trị
     @GetMapping("/{id}")

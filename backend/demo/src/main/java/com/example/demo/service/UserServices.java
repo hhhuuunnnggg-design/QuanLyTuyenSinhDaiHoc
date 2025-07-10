@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.domain.Role;
 import com.example.demo.domain.User;
 import com.example.demo.domain.dto.ResultPaginationDTO;
 import com.example.demo.domain.response.ResCreateUserDTO;
@@ -27,6 +28,9 @@ import lombok.experimental.FieldDefaults;
 public class UserServices {
     @Autowired
     UserServiceRepository userServiceRepository;
+
+    @Autowired
+    RoleService roleService;
 
     public User handleGetUserByUsernames(String username) {
         User user = this.userServiceRepository.findByEmail(username);
@@ -61,6 +65,12 @@ public class UserServices {
     }
 
     public User handleCreateUser(User user) {
+
+        // check role
+        if (user.getRole() != null) {
+            Role r = this.roleService.fetchById(user.getRole().getId());
+            user.setRole(r != null ? r : null);
+        }
         return this.userServiceRepository.save(user);
     }
 
@@ -84,6 +94,14 @@ public class UserServices {
     }
 
     public ResUserDTO convertToResUserDTO(User user) {
+        ResUserDTO.RoleUser roleUser = null;
+        if (user.getRole() != null) {
+            roleUser = ResUserDTO.RoleUser.builder()
+                    .id(user.getRole().getId())
+                    .name(user.getRole().getName())
+                    .build();
+        }
+
         return ResUserDTO.builder()
                 .id(user.getId())
                 .email(user.getEmail())
@@ -97,8 +115,10 @@ public class UserServices {
                 .currentCity(user.getCurrent_city())
                 .hometown(user.getHometown())
                 .bio(user.getBio())
+                .createdAt(user.getCreatedAt())
                 .isAdmin(user.getIs_admin())
-                // .isBlocked(user.isBlocked())
+                .isBlocked(user.isBlocked())
+                .role(roleUser)
                 .build();
     }
 
@@ -155,6 +175,12 @@ public class UserServices {
                 currentUser.setBio(updateUser.getBio());
             }
 
+            // check role
+            if (updateUser.getRole() != null) {
+                Role r = this.roleService.fetchById(updateUser.getRole().getId());
+                currentUser.setRole(r != null ? r : null);
+            }
+
             return this.userServiceRepository.save(currentUser);
         }
         return null;
@@ -198,25 +224,9 @@ public class UserServices {
         rs.setMeta(mt);
 
         // remove sensitive data
-        List<ResUserDTO> listUser = pageUser.getContent()
-                .stream().map(item -> ResUserDTO.builder()
-                        .id(item.getId())
-                        .email(item.getEmail())
-                        .avatar(item.getAvatar())
-                        .coverPhoto(item.getCoverPhoto())
-                        .fullname(item.getFirstName() + " " + item.getLastName())
-                        .dateOfBirth(item.getDateOfBirth())
-                        .gender(item.getGender())
-                        .work(item.getWork())
-                        .education(item.getEducation())
-                        .currentCity(item.getCurrent_city())
-                        .hometown(item.getHometown())
-                        .bio(item.getBio())
-                        .createdAt(item.getCreatedAt())
-                        .isAdmin(item.getIs_admin())
-                        .isBlocked(item.isBlocked())
 
-                        .build())
+        List<ResUserDTO> listUser = pageUser.getContent()
+                .stream().map(item -> this.convertToResUserDTO(item))
                 .collect(Collectors.toList());
 
         rs.setResult(listUser);

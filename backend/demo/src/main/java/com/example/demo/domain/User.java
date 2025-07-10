@@ -9,7 +9,6 @@ import lombok.experimental.FieldDefaults;
 import java.time.Instant;
 import java.time.LocalDate;
 
-
 @Entity
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -45,6 +44,10 @@ public class User {
     Boolean is_blocked = false;
     Instant createdAt;
 
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    private Role role;
+
     // Phương thức tiện ích để kiểm tra trạng thái tài khoản
     @Transient
     public boolean isBlocked() {
@@ -52,11 +55,9 @@ public class User {
     }
 
     @PrePersist
-    public void handleBeforeCreate(){
-        this.createdAt= Instant.now();
+    public void handleBeforeCreate() {
+        this.createdAt = Instant.now();
 
     }
-
-
 
 }

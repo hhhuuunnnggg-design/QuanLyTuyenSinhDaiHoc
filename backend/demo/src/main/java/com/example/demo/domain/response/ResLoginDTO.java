@@ -1,5 +1,6 @@
 package com.example.demo.domain.response;
 
+import com.example.demo.domain.Role;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AccessLevel;
@@ -25,6 +26,7 @@ public class ResLoginDTO {
         String email;
         String fullname;
         Boolean is_admin;
+        Role role;
     }
 
     @Data
@@ -42,6 +44,7 @@ public class ResLoginDTO {
         private String email;
         private Boolean is_admin;
         private String fullName;
+        private Role role;
     }
 
 }

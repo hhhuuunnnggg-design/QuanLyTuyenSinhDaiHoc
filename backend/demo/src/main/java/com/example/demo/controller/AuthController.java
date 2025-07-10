@@ -72,7 +72,8 @@ public class AuthController {
                     currentUserDB.getId(),
                     currentUserDB.getEmail(),
                     fullName,
-                    currentUserDB.getIs_admin());
+                    currentUserDB.getIs_admin(),
+                    currentUserDB.getRole());
             res.setUser(userLogin);
         }
 
@@ -114,7 +115,7 @@ public class AuthController {
             userLogin.setId(currentUserDB.getId());
             userLogin.setEmail(currentUserDB.getEmail());
             userLogin.setFullname(currentUserDB.getLastName() + " " + currentUserDB.getFirstName());
-
+            userLogin.setRole(currentUserDB.getRole());
             userLogin.setIs_admin(currentUserDB.getIs_admin());
             userGetAccount.setUser(userLogin);
         }
@@ -148,10 +149,8 @@ public class AuthController {
                     currentUserDB.getId(),
                     currentUserDB.getEmail(),
                     fullName,
-
-                    currentUserDB.getIs_admin()
-
-            );
+                    currentUserDB.getIs_admin(),
+                    currentUserDB.getRole());
             res.setUser(userLogin);
         }
 
