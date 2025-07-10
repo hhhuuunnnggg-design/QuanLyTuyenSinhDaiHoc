@@ -60,8 +60,8 @@ public class SecurityUtil {
                 .claim("user_email", dto.getUser().getEmail())
                 .claim("user_fullname", dto.getUser().getFullname())
                 .claim("user_is_admin", dto.getUser().getIs_admin())
-                .claim("user_role_id", dto.getUser().getRole() != null ? dto.getUser().getRole().getId() : null)
-                .claim("user_role_name", dto.getUser().getRole() != null ? dto.getUser().getRole().getName() : null)
+                .claim("user_role_id", dto.getUser().getRole() != null ? dto.getUser().getRole().getId() : "")
+                .claim("user_role_name", dto.getUser().getRole() != null ? dto.getUser().getRole().getName() : "")
                 .build();
 
 //        Mã hóa JWT bằng thuật toán HS512 và trả về chuỗi token dạng eyJhbGciOi...
@@ -83,8 +83,8 @@ public class SecurityUtil {
                 .claim("user_email", dto.getUser().getEmail())
                 .claim("user_fullname", dto.getUser().getFullname())
                 .claim("user_is_admin", dto.getUser().getIs_admin())
-                .claim("user_role_id", dto.getUser().getRole() != null ? dto.getUser().getRole().getId() : null)
-                .claim("user_role_name", dto.getUser().getRole() != null ? dto.getUser().getRole().getName() : null)
+                .claim("user_role_id", dto.getUser().getRole() != null ? dto.getUser().getRole().getId() : "")
+                .claim("user_role_name", dto.getUser().getRole() != null ? dto.getUser().getRole().getName() : "")
                 .build();
 
         JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
