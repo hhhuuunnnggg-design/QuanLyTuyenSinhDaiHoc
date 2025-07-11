@@ -1,6 +1,7 @@
 import axios from "@/services/axios.customize";
 import type { Dayjs } from "dayjs";
 
+// only call auth
 export const loginAPI = (email: string, password: string) => {
   const urlBackend = "/api/v1/auth/login";
   return axios.post<IBackendRes<ILogin>>(urlBackend, { email, password });
