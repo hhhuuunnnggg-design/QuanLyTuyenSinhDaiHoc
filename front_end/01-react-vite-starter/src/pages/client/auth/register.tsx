@@ -1,17 +1,20 @@
 // import { loginAPI } from "@/services/api";
-import { loginAPI } from "@/services/api";
+//import { loginAPI } from "@/services/api";
+import { registerAPI } from "@/services/api";
 import type { FormProps } from "antd";
 import { Button, DatePicker, Divider, Form, Input, Select, Steps } from "antd";
+import type { Dayjs } from "dayjs";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import "./register.scss";
 
+// loại dữ liệu mà bạn phải điền vào
 type FieldTypeRegister = {
   email: string;
   password: string;
   firstName: string;
   lastName: string;
-  dateOfBirth: string;
+  dateOfBirth: Dayjs | null;
   gender: "MALE" | "FEMALE" | "OTHER";
   work: string;
   education: string;
@@ -20,6 +23,21 @@ type FieldTypeRegister = {
   bio: string;
 };
 
+// dữ liệu mà bạn cần phải điền vào
+interface UserData {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  dateOfBirth: Dayjs | null;
+  gender?: "MALE" | "FEMALE" | "OTHER";
+  work?: string;
+  education?: string;
+  current_city?: string;
+  hometown?: string;
+  bio?: string;
+}
+
 const RegisterPage = () => {
   const [isSubmit, setIsSubmit] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
@@ -27,29 +45,61 @@ const RegisterPage = () => {
 
   const onFinish: FormProps<FieldTypeRegister>["onFinish"] = async (values) => {
     setIsSubmit(true);
-    console.log("Form values:", values);
-    // const res = await loginAPI("admin@gmail.com", "123456");
-    console.log(">>> check url backend: ", import.meta.env.VITE_BACKEND_URL);
-    const res = await loginAPI("adminhuy5@gmail.com", "123456");
-    console.log(">>> check res: ", res);
+
+    const userData: UserData = {
+      email: values.email,
+      password: values.password,
+      firstName: values.firstName,
+      lastName: values.lastName,
+      dateOfBirth: values.dateOfBirth,
+    };
+
+    // Chỉ thêm các trường có giá trị
+    if (values.gender) userData.gender = values.gender;
+    if (values.work) userData.work = values.work;
+    if (values.education) userData.education = values.education;
+    if (values.current_city) userData.current_city = values.current_city;
+    if (values.hometown) userData.hometown = values.hometown;
+    if (values.bio) userData.bio = values.bio;
+
+    const res = await registerAPI(userData);
+    console.log(">>> Register response: ", res);
+
     setIsSubmit(false);
   };
 
   const nextStep = () => {
-    form.validateFields().then(() => {
-      setCurrentStep(currentStep + 1);
-    });
+    // Validate only current step fields
+    const currentStepFields = getCurrentStepFields(currentStep);
+    form
+      .validateFields(currentStepFields)
+      .then(() => {
+        setCurrentStep(currentStep + 1);
+      })
+      .catch((errorInfo) => {
+        console.log("Validation failed:", errorInfo);
+      });
   };
 
   const prevStep = () => {
     setCurrentStep(currentStep - 1);
   };
 
+  // Get field names for current step
+  const getCurrentStepFields = (step: number) => {
+    if (step === 0) {
+      return ["email", "password", "firstName", "lastName", "dateOfBirth"];
+    } else if (step === 1) {
+      return ["gender", "work", "education", "current_city", "hometown", "bio"];
+    }
+    return [];
+  };
+
   const steps = [
     {
       title: "Thông tin cơ bản",
       content: (
-        <>
+        <div style={{ display: currentStep === 0 ? "block" : "none" }}>
           <Form.Item<FieldTypeRegister>
             labelCol={{ span: 24 }}
             label="Email"
@@ -102,13 +152,13 @@ const RegisterPage = () => {
           >
             <DatePicker style={{ width: "100%" }} format="YYYY-MM-DD" />
           </Form.Item>
-        </>
+        </div>
       ),
     },
     {
       title: "Thông tin chi tiết",
       content: (
-        <>
+        <div style={{ display: currentStep === 1 ? "block" : "none" }}>
           <Form.Item<FieldTypeRegister>
             labelCol={{ span: 24 }}
             label="Giới tính"
@@ -181,7 +231,7 @@ const RegisterPage = () => {
           >
             <Input.TextArea rows={4} />
           </Form.Item>
-        </>
+        </div>
       ),
     },
   ];
@@ -221,7 +271,15 @@ const RegisterPage = () => {
               autoComplete="off"
               layout="vertical"
             >
-              {steps[currentStep].content}
+              {/* Render all form items but only show current step */}
+              {steps.map((step, index) => (
+                <div
+                  key={index}
+                  style={{ display: currentStep === index ? "block" : "none" }}
+                >
+                  {step.content}
+                </div>
+              ))}
 
               <Form.Item>
                 <div
