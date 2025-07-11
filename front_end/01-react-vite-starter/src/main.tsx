@@ -8,6 +8,7 @@ import LoginPage from "./pages/client/auth/login";
 import RegisterPage from "./pages/client/auth/register";
 import BookPage from "./pages/client/book";
 
+import { AppProvider } from "@/components/context/app.context";
 import { App } from "antd";
 import HomePage from "./pages/client/home";
 import "./styles/global.scss";
@@ -61,7 +62,9 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     {/* <Layout /> */}
     <App>
-      <RouterProvider router={router} />
+      <AppProvider>
+        <RouterProvider router={router} />
+      </AppProvider>
     </App>
   </StrictMode>
 );

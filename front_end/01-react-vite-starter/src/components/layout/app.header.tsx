@@ -1,5 +1,13 @@
+import { useCurrentApp } from "@/components/context/app.context";
+
 const AppHeader = () => {
-  return <div>đây chính là header</div>;
+  const { user } = useCurrentApp();
+  return (
+    <div>
+      app header
+      <div>{JSON.stringify(user)}</div>
+    </div>
+  );
 };
 
 export default AppHeader;

@@ -1,3 +1,4 @@
+import { useCurrentApp } from "@/components/context/app.context";
 import { loginAPI } from "@/services/api";
 import type { FormProps } from "antd";
 import { App, Button, Divider, Form, Input } from "antd";
@@ -14,6 +15,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const [isSubmit, setIsSubmit] = useState(false);
   const { message, notification } = App.useApp();
+  const { setIsAuthenticated, setUser } = useCurrentApp();
 
   const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
     const { email, password } = values;
@@ -21,8 +23,10 @@ const LoginPage = () => {
     const res = await loginAPI(email, password);
     setIsSubmit(false);
     if (res?.data) {
-      console.log(res);
-      console.log(res.data);
+      setIsAuthenticated(true);
+      // console.log(res);
+      // console.log(res.data);
+      setUser(res.data.user);
       localStorage.setItem("access_token", res.data.access_token);
 
       message.success("Đăng nhập tài khoản thành công!");

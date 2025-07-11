@@ -38,4 +38,11 @@ declare global {
     fullName: string;
     createdAt: string;
   }
+
+  interface IUser {
+    id: number;
+    email: string;
+    fullname: string;
+    is_admin: boolean;
+  }
 }
