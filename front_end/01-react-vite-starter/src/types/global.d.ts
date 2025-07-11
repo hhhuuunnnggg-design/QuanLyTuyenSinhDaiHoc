@@ -24,19 +24,11 @@ declare global {
   interface ILogin {
     access_token: string;
     user: {
+      id: number;
       email: string;
-      phone: string;
-      fullName: string;
-      role: string;
-      avatar: string;
-      id: string;
+      fullname: string;
+      is_admin: boolean;
     };
-  }
-
-  interface IRegister {
-    _id: string;
-    email: string;
-    fullName: string;
   }
 
   interface IRegister {

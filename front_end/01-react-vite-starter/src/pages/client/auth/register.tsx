@@ -65,14 +65,6 @@ const RegisterPage = () => {
       dateOfBirth: values.dateOfBirth,
     };
 
-    // Chỉ thêm các trường có giá trị
-    if (values.gender) userData.gender = values.gender;
-    if (values.work) userData.work = values.work;
-    if (values.education) userData.education = values.education;
-    if (values.current_city) userData.current_city = values.current_city;
-    if (values.hometown) userData.hometown = values.hometown;
-    if (values.bio) userData.bio = values.bio;
-
     const res = await registerAPI(userData);
     if (res.data) {
       //success
@@ -97,7 +89,7 @@ const RegisterPage = () => {
         setCurrentStep(currentStep + 1);
       })
       .catch((errorInfo) => {
-        console.log("Validation failed:", errorInfo);
+        console.log("Điền thiếu thông tin kìa thằng ngu", errorInfo);
       });
   };
 
