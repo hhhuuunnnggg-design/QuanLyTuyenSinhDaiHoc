@@ -1,20 +1,22 @@
 import { setAuth } from "@/redux/slice/auth.slice";
 import { loginAPI } from "@/services/api";
-import { Button, Form, Input, message } from "antd";
+import { Button, Divider, Form, Input, message } from "antd";
+import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./login.scss";
 
-interface LoginFormValues {
+interface FieldType {
   email: string;
   password: string;
 }
 
 const LoginPage = () => {
+  const [isSubmit, setIsSubmit] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const onFinish = async (values: LoginFormValues) => {
+  const onFinish = async (values: FieldType) => {
     try {
       const res = await loginAPI(values.email, values.password);
       if (res && res.data) {
@@ -35,32 +37,59 @@ const LoginPage = () => {
 
   return (
     <div className="login-page">
-      <Form
-        name="login"
-        layout="vertical"
-        onFinish={onFinish}
-        style={{ maxWidth: 400, margin: "50px auto" }}
-      >
-        <Form.Item
-          label="Email"
-          name="email"
-          rules={[{ required: true, message: "Vui lòng nhập email!" }]}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item
-          label="Mật khẩu"
-          name="password"
-          rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
-        >
-          <Input.Password />
-        </Form.Item>
-        <Form.Item>
-          <Button type="primary" htmlType="submit" block>
-            Đăng nhập
-          </Button>
-        </Form.Item>
-      </Form>
+      <main className="main">
+        <div className="container">
+          <section className="wrapper">
+            <div className="heading" style={{ textAlign: "center" }}>
+              <img
+                style={{ width: "50px", height: "50px" }}
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Logo_%282019%29.png/1024px-Facebook_Logo_%282019%29.png"
+                alt=""
+              />
+              <h2 className="text text-large">Đăng Nhập</h2>
+              <Divider />
+            </div>
+            <Form name="login-form" onFinish={onFinish} autoComplete="off">
+              <Form.Item<FieldType>
+                labelCol={{ span: 24 }} //whole column
+                label="Email"
+                name="email"
+                rules={[
+                  { required: true, message: "Email không được để trống!" },
+                  { type: "email", message: "Email không đúng định dạng!" },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+
+              <Form.Item<FieldType>
+                labelCol={{ span: 24 }} //whole column
+                label="Mật khẩu"
+                name="password"
+                rules={[
+                  { required: true, message: "Mật khẩu không được để trống!" },
+                ]}
+              >
+                <Input.Password />
+              </Form.Item>
+
+              <Form.Item>
+                <Button type="primary" htmlType="submit" loading={isSubmit}>
+                  Đăng nhập
+                </Button>
+              </Form.Item>
+              <Divider>Or</Divider>
+              <p className="text text-normal" style={{ textAlign: "center" }}>
+                Chưa có tài khoản ?
+                <span>
+                  <Link to="/register"> Đăng Ký </Link>
+                </span>
+              </p>
+              <br />
+            </Form>
+          </section>
+        </div>
+      </main>
     </div>
   );
 };
