@@ -20,13 +20,18 @@ export const fetchAccountThunk = createAsyncThunk(
   async (_, { dispatch, rejectWithValue }) => {
     try {
       const res = await fetchAccountAPI();
+      console.log("fetchAccountThunk - Response:", res);
+
       if (res && res.data) {
+        console.log("fetchAccountThunk - User data:", res.data.user);
         dispatch(setAuth({ isAuthenticated: true, user: res.data.user }));
         return res.data;
       }
+      console.log("fetchAccountThunk - No data in response");
       return rejectWithValue("Không nhận được dữ liệu!");
     } catch (error: any) {
-      dispatch(logout());
+      console.log("fetchAccountThunk - Error:", error);
+      // Don't automatically logout, let the caller decide
       return rejectWithValue(
         error.mesage || "Lấy thông tin tài khoản thất bại!"
       );

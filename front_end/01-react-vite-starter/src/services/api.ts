@@ -4,7 +4,13 @@ import type { Dayjs } from "dayjs";
 // Login API
 export const loginAPI = (email: string, password: string) => {
   const urlBackend = "/api/v1/auth/login";
-  return axios.post<IBackendRes<ILogin>>(urlBackend, { email, password });
+  console.log("Calling login API with:", { email, password });
+  return axios
+    .post<IBackendRes<ILogin>>(urlBackend, { email, password })
+    .then((res) => {
+      console.log("Raw login API response:", res);
+      return res;
+    });
 };
 
 // Register API
@@ -28,7 +34,11 @@ export const registerAPI = (userData: {
 // Fetch account API
 export const fetchAccountAPI = () => {
   const urlBackend = "/api/v1/auth/account";
-  return axios.get<IBackendRes<IFetchAccount>>(urlBackend);
+  console.log("Calling fetchAccount API");
+  return axios.get<IBackendRes<IFetchAccount>>(urlBackend).then((res) => {
+    console.log("Raw fetchAccount API response:", res);
+    return res;
+  });
 };
 
 // Create user API

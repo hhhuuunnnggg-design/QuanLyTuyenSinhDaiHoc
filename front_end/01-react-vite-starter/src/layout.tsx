@@ -1,27 +1,14 @@
-import { useEffect } from "react";
-import { Outlet } from "react-router-dom";
-import { useCurrentApp } from "./components/context/app.context";
-// import { fetchAccountAPI } from "services/api";
+import { Outlet, useLocation } from "react-router-dom";
 import AppHeader from "./components/layout/app.header";
-import { fetchAccountAPI } from "./services/api";
 
 function Layout() {
-  const { setUser } = useCurrentApp();
+  const location = useLocation();
+  const isAuthPage =
+    location.pathname === "/login" || location.pathname === "/register";
 
-  useEffect(() => {
-    const fetchAccount = async () => {
-      const res = await fetchAccountAPI();
-      if (res.data) {
-        setUser(res.data.user);
-      }
-      console.log("check res>>>", res);
-    };
-
-    fetchAccount();
-  }, []);
   return (
     <div>
-      <AppHeader />
+      {!isAuthPage && <AppHeader />}
       <Outlet />
     </div>
   );

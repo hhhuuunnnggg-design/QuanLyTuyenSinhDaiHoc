@@ -1,5 +1,4 @@
-import { RootState } from "@/redux/store";
-import { useSelector } from "react-redux";
+import { useCurrentApp } from "@/components/context/app.context";
 
 interface RestrictedProps {
   permission: string;
@@ -7,10 +6,17 @@ interface RestrictedProps {
 }
 
 const Restricted: React.FC<RestrictedProps> = ({ permission, children }) => {
-  const user = useSelector((state: RootState) => state.auth.user);
+  const { user, isAuthenticated, loading } = useCurrentApp();
+
+  // Wait for loading to complete
+  if (loading) {
+    return null;
+  }
 
   const hasPermission =
-    user?.role.permissions.some((p) => p.apiPath === permission) || false;
+    (isAuthenticated &&
+      user?.role?.permissions?.some((p) => p.apiPath === permission)) ||
+    false;
 
   return hasPermission ? <>{children}</> : null;
 };

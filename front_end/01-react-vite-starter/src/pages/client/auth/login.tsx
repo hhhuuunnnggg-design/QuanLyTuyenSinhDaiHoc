@@ -18,20 +18,43 @@ const LoginPage = () => {
 
   const onFinish = async (values: FieldType) => {
     try {
+      setIsSubmit(true);
       const res = await loginAPI(values.email, values.password);
+      console.log("Login response:", res);
+
+      // Check if response has the correct structure
       if (res && res.data) {
+        console.log("Login data:", res.data);
+
+        // Check if access_token exists
+        if (!res.data.access_token) {
+          console.error("No access_token in response:", res.data);
+          message.error("Không nhận được token đăng nhập!");
+          return;
+        }
+
         localStorage.setItem("access_token", res.data.access_token);
+        console.log("Token saved:", res.data.access_token);
+
+        // Update Redux store - context will automatically sync
         dispatch(
           setAuth({
             isAuthenticated: true,
             user: res.data.user,
           })
         );
+
         message.success("Đăng nhập thành công!");
         navigate("/admin");
+      } else {
+        console.error("Invalid response structure:", res);
+        message.error("Response không đúng định dạng!");
       }
     } catch (error: any) {
+      console.error("Login error:", error);
       message.error(error.mesage || "Đăng nhập thất bại!");
+    } finally {
+      setIsSubmit(false);
     }
   };
 

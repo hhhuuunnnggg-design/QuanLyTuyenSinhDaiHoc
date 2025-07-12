@@ -11,12 +11,12 @@ declare global {
 
   interface IModelPaginate<T> {
     meta: {
-      current: number;
+      page: number;
       pageSize: number;
       pages: number;
       total: number;
     };
-    results: T[];
+    result: T[];
   }
 
   // Permission interface
@@ -81,9 +81,22 @@ declare global {
   interface IUserData {
     id: number;
     email: string;
-    firstName: string;
-    lastName: string;
-    gender: string;
+    avatar: string | null;
+    coverPhoto: string | null;
+    fullname: string;
+    dateOfBirth: string;
+    gender: string | null;
+    work: string | null;
+    education: string | null;
+    currentCity: string | null;
+    hometown: string | null;
+    bio: string | null;
     createdAt: string;
+    role: {
+      id: number;
+      name: string;
+    } | null;
+    blocked: boolean;
+    admin: boolean;
   }
 }

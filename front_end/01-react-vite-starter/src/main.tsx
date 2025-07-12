@@ -12,34 +12,13 @@ import RegisterPage from "./pages/client/auth/register";
 import BookPage from "./pages/client/book";
 // import ProtectedRoute from "./components/common/protectedRoute";
 
-import { AppProvider, useCurrentApp } from "@/components/context/app.context";
+import { AppProvider } from "@/components/context/app.context";
 import { App } from "antd";
 import ProtectedRoute from "./components/common/protectedRoute";
 import HomePage from "./pages/client/home";
 import { fetchAccountThunk } from "./redux/slice/auth.slice";
 import "./styles/global.scss";
 
-const AppWrapper = () => {
-  const dispatch = useDispatch();
-  const { setIsAuthenticated, setUser } = useCurrentApp();
-
-  useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      dispatch(fetchAccountThunk()).then((result) => {
-        if (fetchAccountThunk.fulfilled.match(result)) {
-          setIsAuthenticated(true);
-          setUser(result.payload.user);
-        } else {
-          setIsAuthenticated(false);
-          setUser(null);
-        }
-      });
-    }
-  }, [dispatch, setIsAuthenticated, setUser]);
-
-  return <RouterProvider router={router} />;
-};
 const router = createBrowserRouter([
   {
     path: "/",
@@ -83,13 +62,54 @@ const router = createBrowserRouter([
   },
 ]);
 
+const AppWrapper = () => {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    console.log("AppWrapper - Token found:", token);
+
+    if (token) {
+      console.log("AppWrapper - Fetching account...");
+      dispatch(fetchAccountThunk() as any)
+        .then((result: any) => {
+          console.log("AppWrapper - Fetch account result:", result);
+          if (fetchAccountThunk.fulfilled.match(result)) {
+            console.log(
+              "AppWrapper - Setting authenticated user:",
+              result.payload.user
+            );
+            // Context will automatically sync with Redux state
+          } else {
+            console.log(
+              "AppWrapper - Fetch account failed, but keeping token for now"
+            );
+            // Context will automatically sync with Redux state
+          }
+        })
+        .catch((error: any) => {
+          console.log("AppWrapper - Fetch account error:", error);
+          // Context will automatically sync with Redux state
+          // Only remove token on specific errors
+          if (error?.response?.status === 401) {
+            localStorage.removeItem("access_token");
+          }
+        });
+    } else {
+      console.log("AppWrapper - No token found");
+      // Context will automatically sync with Redux state
+    }
+  }, [dispatch]);
+
+  return <RouterProvider router={router} />;
+};
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Provider store={store}>
       <App>
         <AppProvider>
           <AppWrapper />
-          {/* <RouterProvider router={router} /> */}
         </AppProvider>
       </App>
     </Provider>
