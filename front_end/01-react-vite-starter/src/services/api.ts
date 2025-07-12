@@ -53,6 +53,26 @@ export const createUserAPI = (userData: {
   return axios.post<IBackendRes<any>>(urlBackend, userData);
 };
 
+// Update user API
+export const updateUserAPI = (
+  userId: number,
+  userData: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    gender: "MALE" | "FEMALE" | "OTHER";
+  }
+) => {
+  const urlBackend = `/api/v1/users/${userId}`;
+  return axios.put<IBackendRes<any>>(urlBackend, userData);
+};
+
+// Delete user API
+export const deleteUserAPI = (userId: number) => {
+  const urlBackend = `/api/v1/users/${userId}`;
+  return axios.delete<IBackendRes<any>>(urlBackend);
+};
+
 // Logout API
 export const logoutAPI = () => {
   const urlBackend = "/api/v1/auth/logout";
