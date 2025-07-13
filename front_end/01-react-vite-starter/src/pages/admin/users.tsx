@@ -42,18 +42,7 @@ const UsersPage = () => {
       console.log("UsersPage - Has update permission:", hasUpdatePermission);
       console.log("UsersPage - Has delete permission:", hasDeletePermission);
     }
-
-    // Temporarily comment out permission check for testing
-    /*
-    const hasPermission = user?.role.permissions.some(
-      (p) => p.apiPath === "/api/v1/users/fetch-all"
-    );
-    if (!hasPermission) {
-      message.error("Bạn không có quyền truy cập trang này!");
-      navigate("/");
-    }
-    */
-  }, [user, navigate]);
+  }, [user]);
 
   const columns = [
     {

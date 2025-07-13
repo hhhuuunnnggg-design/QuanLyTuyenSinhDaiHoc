@@ -9,7 +9,7 @@ const instance = axios.create({
 // Add a request interceptor
 instance.interceptors.request.use(
   function (config) {
-    // Do something before request is sent
+    // gửi token vào header, để chống reload lại trang
     const token = localStorage.getItem("access_token");
     const auth = token ? `Bearer ${token}` : "";
     config.headers["Authorization"] = auth;

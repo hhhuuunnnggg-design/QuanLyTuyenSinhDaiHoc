@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 interface IAppContext {
   isAuthenticated: boolean;
   setIsAuthenticated: (v: boolean) => void;
-  setUser: (v: IUser) => void;
+  setUser: (v: IUser | null) => void;
   user: IUser | null;
   loading: boolean;
 }
@@ -48,10 +48,10 @@ export const AppProvider = (props: TProps) => {
   //🔄 Khi Redux thay đổi, Context cũng tự động cập nhật.
 
   // Đồng bộ từ Context → Redux
-  const handleSetUser = (newUser: IUser) => {
+  const handleSetUser = (newUser: IUser | null) => {
     setUser(newUser);
     // Also update Redux state
-    dispatch(setAuth({ isAuthenticated: true, user: newUser }));
+    dispatch(setAuth({ isAuthenticated: !!newUser, user: newUser }));
   };
 
   // Enhanced setIsAuthenticated function that also updates Redux

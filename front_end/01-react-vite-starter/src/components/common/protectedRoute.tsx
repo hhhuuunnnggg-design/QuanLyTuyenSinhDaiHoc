@@ -1,5 +1,5 @@
 import { useCurrentApp } from "@/components/context/app.context";
-import { message } from "antd";
+import { Button, message, Result } from "antd";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -10,29 +10,18 @@ interface ProtectedRouteProps {
 
 // Component hiển thị khi không có quyền truy cập
 const AccessDenied = () => {
+  const navigate = useNavigate();
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        height: "100vh",
-        textAlign: "center",
-        padding: "20px",
-      }}
-    >
-      <div style={{ fontSize: "48px", marginBottom: "20px" }}>🚫</div>
-      <h1 style={{ color: "#ff4d4f", marginBottom: "10px" }}>
-        Truy cập bị từ chối
-      </h1>
-      <p style={{ fontSize: "18px", color: "#666", marginBottom: "20px" }}>
-        Bạn không có quyền truy cập trang này!
-      </p>
-      <p style={{ fontSize: "16px", color: "#999" }}>
-        Tài khoản không có vai trò hoặc không đủ quyền hạn.
-      </p>
-    </div>
+    <Result
+      status="403"
+      title="403"
+      subTitle="Sorry, you are not authorized to access this page."
+      extra={
+        <Button type="primary" onClick={() => navigate("/")}>
+          Back Home
+        </Button>
+      }
+    />
   );
 };
 
@@ -44,19 +33,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("ProtectedRoute - User:", user);
-    console.log("ProtectedRoute - IsAuthenticated:", isAuthenticated);
-    console.log("ProtectedRoute - Loading:", loading);
-    console.log("ProtectedRoute - Permission required:", permission);
-
     // Wait for loading to complete
     if (loading) {
-      console.log("ProtectedRoute - Still loading, waiting...");
       return;
     }
 
     if (!isAuthenticated || !user) {
-      console.log("ProtectedRoute - Not authenticated or no user");
       message.error("Bạn chưa đăng nhập!");
       navigate("/login");
       return;
@@ -64,7 +46,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
     // Kiểm tra role và permissions nhưng không redirect
     if (!user.role) {
-      console.log("ProtectedRoute - User has no role");
       message.error(
         "Bạn không có quyền truy cập trang này! Tài khoản không có vai trò."
       );

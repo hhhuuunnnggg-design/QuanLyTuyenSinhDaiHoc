@@ -2,12 +2,29 @@ import Restricted from "@/components/common/restricted";
 import { useCurrentApp } from "@/components/context/app.context";
 import { logout } from "@/redux/slice/auth.slice";
 import { logoutAPI } from "@/services/api";
-import { Button, message } from "antd";
+import {
+  Avatar,
+  Badge,
+  Button,
+  Divider,
+  Drawer,
+  Dropdown,
+  message,
+  Popover,
+  Space,
+} from "antd";
+import { useState } from "react";
+import { FaReact } from "react-icons/fa";
+import { FiShoppingCart } from "react-icons/fi";
+import { VscSearchFuzzy } from "react-icons/vsc";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import "./app.header.scss";
 
 const AppHeader = () => {
-  const { user, isAuthenticated, loading } = useCurrentApp();
+  const [openDrawer, setOpenDrawer] = useState(false);
+  const { user, isAuthenticated, loading, setUser, setIsAuthenticated } =
+    useCurrentApp();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -15,29 +32,150 @@ const AppHeader = () => {
     try {
       await logoutAPI();
       dispatch(logout());
+      // Fix: setUser expects IUser but we need to handle null case
+      setUser(null);
+      setIsAuthenticated(false);
       localStorage.removeItem("access_token");
       message.success("Đăng xuất thành công!");
       navigate("/login");
     } catch (error: any) {
-      message.error(error.mesage || "Đăng xuất thất bại!");
+      message.error(error?.message || "Đăng xuất thất bại!");
     }
   };
 
+  const menuItems = [
+    {
+      label: <Link to="/account">Quản lý tài khoản</Link>,
+      key: "account",
+    },
+    {
+      label: <Link to="/history">Lịch sử mua hàng</Link>,
+      key: "history",
+    },
+    {
+      label: (
+        <span style={{ cursor: "pointer" }} onClick={handleLogout}>
+          Đăng xuất
+        </span>
+      ),
+      key: "logout",
+    },
+  ];
+
+  // Fix: Check if user has role instead of comparing role name
+  if (user?.role !== null) {
+    menuItems.unshift({
+      label: (
+        <Restricted permission="/api/v1/users/fetch-all">
+          <Link to="/admin/user">Trang quản trị</Link>
+        </Restricted>
+      ),
+      key: "admin",
+    });
+  }
+
+  // Keep urlAvatar as requested, but add temporary avatar property
+  const urlAvatar = `${import.meta.env.VITE_BACKEND_URL}/images/avatar/${
+    (user as any)?.avatar || "default-avatar.jpg"
+  }`;
+
   return (
-    <div style={{ padding: 16, borderBottom: "1px solid #e8e8e8" }}>
-      <h2>App Header</h2>
-      {!loading && isAuthenticated && user && (
-        <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-          <p>Xin chào, {user.fullname}</p>
-          <Restricted permission="/api/v1/users/fetch-all">
-            <Link to="/admin/user">
-              <Button type="primary">Quản trị</Button>
-            </Link>
-          </Restricted>
-          <Button onClick={handleLogout}>Đăng xuất</Button>
-        </div>
-      )}
-    </div>
+    <>
+      <div className="header-container">
+        <header className="page-header">
+          <div className="page-header__top">
+            <div
+              className="page-header__toggle"
+              onClick={() => setOpenDrawer(true)}
+            >
+              ☰
+            </div>
+
+            <div className="page-header__logo">
+              <span className="logo" onClick={() => navigate("/")}>
+                <FaReact className="rotate icon-react" />
+                Hỏi Dân !T
+                <VscSearchFuzzy className="icon-search" />
+              </span>
+              <input
+                className="input-search"
+                type="text"
+                placeholder="Bạn tìm gì hôm nay"
+              />
+            </div>
+          </div>
+
+          <nav className="page-header__bottom">
+            <ul className="navigation">
+              <li className="navigation__item">
+                <Popover
+                  title="Giỏ hàng"
+                  placement="topRight"
+                  content={<div>Chưa có sản phẩm</div>}
+                >
+                  <Badge count={10} size="small" showZero>
+                    <FiShoppingCart className="icon-cart" />
+                  </Badge>
+                </Popover>
+              </li>
+              <li className="navigation__item mobile">
+                <Divider type="vertical" />
+              </li>
+              <li className="navigation__item mobile">
+                {!loading && isAuthenticated && user ? (
+                  <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
+                    <Space>
+                      <Avatar src={urlAvatar} />
+                      {user?.fullname}
+                    </Space>
+                  </Dropdown>
+                ) : (
+                  <span onClick={() => navigate("/login")}>Tài khoản</span>
+                )}
+              </li>
+            </ul>
+          </nav>
+        </header>
+      </div>
+
+      <Drawer
+        title="Menu chức năng"
+        placement="left"
+        onClose={() => setOpenDrawer(false)}
+        open={openDrawer}
+      >
+        {!isAuthenticated ? (
+          <Button type="primary" onClick={() => navigate("/login")}>
+            Đăng nhập
+          </Button>
+        ) : (
+          <>
+            <p>
+              <Link to="/account">Quản lý tài khoản</Link>
+            </p>
+            <Divider />
+            <p>
+              <Link to="/history">Lịch sử mua hàng</Link>
+            </p>
+            <Divider />
+            {user?.role !== null && (
+              <Restricted permission="/api/v1/users/fetch-all">
+                <p>
+                  <Link to="/admin/user">Trang quản trị</Link>
+                </p>
+                <Divider />
+              </Restricted>
+            )}
+            <p
+              onClick={handleLogout}
+              style={{ cursor: "pointer", color: "red" }}
+            >
+              Đăng xuất
+            </p>
+          </>
+        )}
+      </Drawer>
+    </>
   );
 };
 
