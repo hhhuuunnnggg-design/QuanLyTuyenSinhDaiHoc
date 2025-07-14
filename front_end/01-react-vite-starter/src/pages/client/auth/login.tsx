@@ -51,7 +51,6 @@ const LoginPage = () => {
           // User has role (admin) - redirect to admin page
           navigate("/admin/user");
         } else {
-          // User has no role (normal user) - redirect to home page
           navigate("/");
         }
       } else {

@@ -14,7 +14,7 @@ import BookPage from "./pages/client/book";
 import { AppProvider } from "@/components/context/app.context";
 import { App, ConfigProvider } from "antd";
 import viVN from "antd/locale/vi_VN";
-import ProtectedRoute from "./components/common/protectedRoute";
+import { AdminRoute } from "./components/common/protectedRoute";
 import LayoutAdmin from "./components/layout/layout.admin";
 import PermissionPage from "./pages/admin/permission";
 import RolePage from "./pages/admin/role";
@@ -45,9 +45,9 @@ const router = createBrowserRouter([
   {
     path: "/admin",
     element: (
-      <ProtectedRoute permission="/api/v1/users/fetch-all">
+      <AdminRoute>
         <LayoutAdmin />
-      </ProtectedRoute>
+      </AdminRoute>
     ),
     children: [
       {

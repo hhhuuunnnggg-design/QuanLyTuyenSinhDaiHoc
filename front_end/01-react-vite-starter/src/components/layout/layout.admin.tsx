@@ -27,10 +27,8 @@ const LayoutAdmin = () => {
 
   // Check if user has admin role
   useEffect(() => {
-    if (isAuthenticated && user?.role === null) {
-      message.error("Bạn không có quyền truy cập trang quản trị!");
-      navigate("/");
-    }
+    // Không cần chặn user có role nữa vì đã được xử lý ở AdminRoute
+    // Chỉ hiển thị thông báo nếu cần
   }, [isAuthenticated, user, navigate]);
 
   const handleLogout = async () => {
@@ -120,10 +118,8 @@ const LayoutAdmin = () => {
     return null;
   }
 
-  // If user has no role, redirect to home
-  if (user?.role === null) {
-    return null;
-  }
+  // Không cần kiểm tra role nữa vì đã được xử lý ở AdminRoute
+  // Chỉ render nếu đã đăng nhập
 
   return (
     <>

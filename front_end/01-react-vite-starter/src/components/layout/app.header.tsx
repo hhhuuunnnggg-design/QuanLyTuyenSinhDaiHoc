@@ -10,13 +10,12 @@ import {
   Drawer,
   Dropdown,
   message,
-  Popover,
   Space,
 } from "antd";
 import { useState } from "react";
-import { FaReact } from "react-icons/fa";
-import { FiShoppingCart } from "react-icons/fi";
-import { VscSearchFuzzy } from "react-icons/vsc";
+import { FaVideo } from "react-icons/fa";
+import { FiBell, FiMessageCircle } from "react-icons/fi";
+import { VscHome } from "react-icons/vsc";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import "./app.header.scss";
@@ -32,7 +31,6 @@ const AppHeader = () => {
     try {
       await logoutAPI();
       dispatch(logout());
-      // Fix: setUser expects IUser but we need to handle null case
       setUser(null);
       setIsAuthenticated(false);
       localStorage.removeItem("access_token");
@@ -62,7 +60,6 @@ const AppHeader = () => {
     },
   ];
 
-  // Fix: Check if user has role instead of comparing role name
   if (user?.role !== null) {
     menuItems.unshift({
       label: (
@@ -73,6 +70,60 @@ const AppHeader = () => {
       key: "admin",
     });
   }
+
+  const navIcons = [
+    {
+      icon: (
+        <Badge count={2} size="small">
+          <FiMessageCircle />
+        </Badge>
+      ),
+      key: "messages",
+      onClick: () => console.log("Messages"),
+    },
+    {
+      icon: (
+        <Badge count={5} size="small">
+          <FiBell />
+        </Badge>
+      ),
+      key: "notifications",
+      onClick: () => console.log("Notifications"),
+    },
+  ];
+  const navIcons1 = [
+    { icon: <VscHome />, key: "home", onClick: () => navigate("/") },
+    { icon: <FaVideo />, key: "video", onClick: () => console.log("Video") },
+    { icon: <FaVideo />, key: "video", onClick: () => console.log("Video") },
+
+    {
+      icon: (
+        <Badge count={8} size="small">
+          <FiBell />
+        </Badge>
+      ),
+      key: "friends",
+      onClick: () => console.log("Friend Requests"),
+    },
+    {
+      icon: (
+        <Badge count={2} size="small">
+          <FiMessageCircle />
+        </Badge>
+      ),
+      key: "messages",
+      onClick: () => console.log("Messages"),
+    },
+    {
+      icon: (
+        <Badge count={5} size="small">
+          <FiBell />
+        </Badge>
+      ),
+      key: "notifications",
+      onClick: () => console.log("Notifications"),
+    },
+  ];
 
   return (
     <>
@@ -85,51 +136,50 @@ const AppHeader = () => {
             >
               ☰
             </div>
-
             <div className="page-header__logo">
-              <span className="logo" onClick={() => navigate("/")}>
-                <FaReact className="rotate icon-react" />
-                Hỏi Dân !T
-                <VscSearchFuzzy className="icon-search" />
-              </span>
+              <Link to="/" className="logo">
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <img
+                    style={{ width: "40px", height: "40px" }}
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Logo_%282019%29.png/1024px-Facebook_Logo_%282019%29.png"
+                    alt=""
+                  />
+                </div>
+              </Link>
               <input
                 className="input-search"
                 type="text"
-                placeholder="Bạn tìm gì hôm nay"
+                placeholder="Tìm kiếm trên Facebook"
               />
             </div>
-          </div>
-
-          <nav className="page-header__bottom">
-            <ul className="navigation">
-              <li className="navigation__item">
-                <Popover
-                  title="Giỏ hàng"
-                  placement="topRight"
-                  content={<div>Chưa có sản phẩm</div>}
+            <div className="page-header__center">
+              {navIcons1.map((item) => (
+                <div
+                  key={item.key}
+                  className="nav-item"
+                  onClick={item.onClick}
+                  style={{ margin: "10px" }}
                 >
-                  <Badge count={10} size="small" showZero>
-                    <FiShoppingCart className="icon-cart" />
-                  </Badge>
-                </Popover>
-              </li>
-              <li className="navigation__item mobile">
-                <Divider type="vertical" />
-              </li>
-              <li className="navigation__item mobile">
-                {!loading && isAuthenticated && user ? (
-                  <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
-                    <Space>
-                      <Avatar src={user?.avatar} />
-                      {user?.fullname}
-                    </Space>
-                  </Dropdown>
-                ) : (
-                  <span onClick={() => navigate("/login")}>Tài khoản</span>
-                )}
-              </li>
-            </ul>
-          </nav>
+                  {item.icon}
+                </div>
+              ))}
+            </div>
+            <nav className="page-header__nav">
+              {navIcons.map((item) => (
+                <div key={item.key} className="nav-item" onClick={item.onClick}>
+                  {item.icon}
+                </div>
+              ))}
+              {!loading && isAuthenticated && user && (
+                <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
+                  <Space className="nav-item">
+                    <Avatar src={user?.avatar} />
+                    {user?.fullname}
+                  </Space>
+                </Dropdown>
+              )}
+            </nav>
+          </div>
         </header>
       </div>
 

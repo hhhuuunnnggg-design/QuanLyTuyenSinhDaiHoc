@@ -8,6 +8,10 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
+interface AdminRouteProps {
+  children: React.ReactNode;
+}
+
 // Component hiển thị khi không có quyền truy cập
 const AccessDenied = () => {
   const navigate = useNavigate();
@@ -103,4 +107,45 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   return hasPermission ? <>{children}</> : <AccessDenied />;
 };
 
+// Component cho route admin - chỉ yêu cầu đăng nhập và có role
+const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
+  const { user, isAuthenticated, loading } = useCurrentApp();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (loading) {
+      return;
+    }
+
+    if (!isAuthenticated || !user) {
+      message.error("Bạn chưa đăng nhập!");
+      navigate("/login");
+      return;
+    }
+
+    // Chỉ yêu cầu có role, không cần permission cụ thể
+    if (!user.role) {
+      message.error("Bạn không có quyền truy cập trang quản trị!");
+
+      return;
+    }
+  }, [user, isAuthenticated, loading, navigate]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!isAuthenticated || !user) {
+    return null;
+  }
+
+  // Chỉ render nếu có role
+  if (!user.role) {
+    return <AccessDenied />;
+  }
+
+  return <>{children}</>;
+};
+
 export default ProtectedRoute;
+export { AdminRoute };
