@@ -35,8 +35,8 @@ interface IUserData {
   currentCity?: string;
   hometown?: string;
   bio?: string;
-  blocked: boolean;
-  admin: boolean;
+  isBlocked: boolean;
+  isAdmin: boolean;
 }
 
 const UsersPage = () => {
@@ -103,10 +103,22 @@ const UsersPage = () => {
       },
     },
     {
+      title: "Trạng thái",
+      dataIndex: "isBlocked",
+      key: "isBlocked",
+      hideInSearch: true,
+      render: (active: boolean) => (
+        <span style={{ color: active ? "green" : "red" }}>
+          {active ? "Hoạt động" : "Không hoạt động"}
+        </span>
+      ),
+    },
+    {
       title: "Ngày tạo",
       dataIndex: "createdAt",
       key: "createdAt",
       hideInSearch: true,
+      render: (date: string) => new Date(date).toLocaleDateString("vi-VN"),
     },
     {
       title: "Thao tác",
@@ -200,7 +212,7 @@ const UsersPage = () => {
     <div style={{ padding: 24 }}>
       <ProTable<IUserData>
         actionRef={actionRef}
-        columns={columns}
+        columns={columns as any}
         request={async (params) => {
           try {
             // Xây dựng mảng filter

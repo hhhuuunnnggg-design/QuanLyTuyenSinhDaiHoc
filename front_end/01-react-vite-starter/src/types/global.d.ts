@@ -98,7 +98,7 @@ declare global {
       id: number;
       name: string;
     } | null;
-    blocked: boolean;
-    admin: boolean;
+    isBlocked: boolean;
+    isAdmin: boolean;
   }
 }
