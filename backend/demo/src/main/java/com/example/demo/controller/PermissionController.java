@@ -37,7 +37,7 @@ public class PermissionController {
         this.permissionService = permissionService;
     }
 
-    @PostMapping("")
+    @PostMapping("/create")
     @ApiMessage("Create a permission")
     public ResponseEntity<Permission> create(@Valid @RequestBody Permission p) throws IdInvalidException {
         // check exist

@@ -16,6 +16,7 @@ import { App, ConfigProvider } from "antd";
 import viVN from "antd/locale/vi_VN";
 import ProtectedRoute from "./components/common/protectedRoute";
 import LayoutAdmin from "./components/layout/layout.admin";
+import PermissionPage from "./pages/admin/permission";
 import RolePage from "./pages/admin/role";
 import UsersPage from "./pages/admin/users";
 import HomePage from "./pages/client/home";
@@ -56,6 +57,10 @@ const router = createBrowserRouter([
       {
         path: "role",
         element: <RolePage />,
+      },
+      {
+        path: "permission",
+        element: <PermissionPage />,
       },
     ],
   },

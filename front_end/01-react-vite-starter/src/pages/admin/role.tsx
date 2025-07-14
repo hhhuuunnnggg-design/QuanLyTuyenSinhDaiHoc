@@ -3,7 +3,7 @@ import { useCurrentApp } from "@/components/context/app.context";
 import {
   createRoleAPI,
   deleteRoleAPI,
-  fetchPermissionsAPI,
+  fetchAllPermissionsAPI,
   updateRoleAPI,
 } from "@/services/api";
 import axios from "@/services/axios.customize";
@@ -46,8 +46,9 @@ const RolePage = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingRole, setEditingRole] = useState<any>(null);
+  const [editingRole, setEditingRole] = useState<IRoleData | null>(null);
   const [permissions, setPermissions] = useState<IPermission[]>([]);
+  const [loadingPermissions, setLoadingPermissions] = useState(false);
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
   const actionRef = useRef<any>();
@@ -57,13 +58,22 @@ const RolePage = () => {
   }, []);
 
   const fetchPermissions = async () => {
+    setLoadingPermissions(true);
     try {
-      const response = await fetchPermissionsAPI();
-      if (response.data?.data) {
-        setPermissions(response.data.data);
+      const response = await fetchAllPermissionsAPI({ page: 1, size: 100 });
+      const permissionsData =
+        response.data?.data?.result || response.data?.result || [];
+      if (Array.isArray(permissionsData)) {
+        setPermissions(permissionsData);
+      } else {
+        console.error("Permissions data is not an array:", permissionsData);
+        message.error("Không thể tải danh sách quyền!");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching permissions:", error);
+      message.error("Lỗi khi tải danh sách quyền!");
+    } finally {
+      setLoadingPermissions(false);
     }
   };
 
@@ -85,7 +95,6 @@ const RolePage = () => {
       key: "description",
       hideInSearch: true,
     },
-
     {
       title: "Số quyền",
       key: "permissionCount",
@@ -110,12 +119,11 @@ const RolePage = () => {
         </span>
       ),
     },
-
     {
       title: "Thao tác",
       key: "action",
       hideInSearch: true,
-      render: (_: any, record: any) => (
+      render: (_: any, record: IRoleData) => (
         <Space>
           <Restricted permission="/api/v1/roles/{id}" method="PUT">
             <Button
@@ -168,7 +176,7 @@ const RolePage = () => {
     }
   };
 
-  const handleEdit = (role: any) => {
+  const handleEdit = (role: IRoleData) => {
     setEditingRole(role);
     editForm.setFieldsValue({
       name: role.name,
@@ -187,7 +195,7 @@ const RolePage = () => {
         active: values.active,
         permissions: values.permissions?.map((id: number) => ({ id })) || [],
       };
-      await updateRoleAPI(editingRole.id, roleData);
+      await updateRoleAPI(editingRole!.id, roleData);
       message.success("Cập nhật vai trò thành công!");
       setIsEditModalOpen(false);
       setEditingRole(null);
@@ -216,17 +224,14 @@ const RolePage = () => {
         request={async (params) => {
           try {
             const filters: string[] = [];
-
             if (params.name) {
               filters.push(`name~'${params.name}'`);
             }
-
             const requestParams = {
               page: params.current,
               size: params.pageSize,
               filter: filters,
             };
-
             const res = await axios.get("/api/v1/roles/fetch-all", {
               params: requestParams,
               paramsSerializer: (params) => {
@@ -237,18 +242,15 @@ const RolePage = () => {
                 return query.toString();
               },
             });
-
             if (res && res.data) {
               const resultData = res.data.result || [];
               const totalCount = res.data.meta?.total || 0;
-
               return {
                 data: resultData,
                 total: totalCount,
                 success: true,
               };
             }
-
             return {
               data: [],
               total: 0,
@@ -324,22 +326,28 @@ const RolePage = () => {
               { required: true, message: "Vui lòng chọn ít nhất một quyền!" },
             ]}
           >
-            <Checkbox.Group style={{ width: "100%" }}>
-              {permissions.map((permission) => (
-                <div key={permission.id} style={{ marginBottom: 8 }}>
-                  <Checkbox value={permission.id}>
-                    <div>
-                      <div style={{ fontWeight: "bold" }}>
-                        {permission.name}
+            {loadingPermissions ? (
+              <div>Đang tải danh sách quyền...</div>
+            ) : permissions.length === 0 ? (
+              <div>Không có quyền nào được tải!</div>
+            ) : (
+              <Checkbox.Group style={{ width: "100%" }}>
+                {permissions.map((permission) => (
+                  <div key={permission.id} style={{ marginBottom: 8 }}>
+                    <Checkbox value={permission.id}>
+                      <div>
+                        <div style={{ fontWeight: "bold" }}>
+                          {permission.name}
+                        </div>
+                        <div style={{ fontSize: "12px", color: "#666" }}>
+                          {permission.method} {permission.apiPath}
+                        </div>
                       </div>
-                      <div style={{ fontSize: "12px", color: "#666" }}>
-                        {permission.method} {permission.apiPath}
-                      </div>
-                    </div>
-                  </Checkbox>
-                </div>
-              ))}
-            </Checkbox.Group>
+                    </Checkbox>
+                  </div>
+                ))}
+              </Checkbox.Group>
+            )}
           </Form.Item>
         </Form>
       </Modal>
@@ -385,22 +393,28 @@ const RolePage = () => {
               { required: true, message: "Vui lòng chọn ít nhất một quyền!" },
             ]}
           >
-            <Checkbox.Group style={{ width: "100%" }}>
-              {permissions.map((permission) => (
-                <div key={permission.id} style={{ marginBottom: 8 }}>
-                  <Checkbox value={permission.id}>
-                    <div>
-                      <div style={{ fontWeight: "bold" }}>
-                        {permission.name}
+            {loadingPermissions ? (
+              <div>Đang tải danh sách quyền...</div>
+            ) : permissions.length === 0 ? (
+              <div>Không có quyền nào được tải!</div>
+            ) : (
+              <Checkbox.Group style={{ width: "100%" }}>
+                {permissions.map((permission) => (
+                  <div key={permission.id} style={{ marginBottom: 8 }}>
+                    <Checkbox value={permission.id}>
+                      <div>
+                        <div style={{ fontWeight: "bold" }}>
+                          {permission.name}
+                        </div>
+                        <div style={{ fontSize: "12px", color: "#666" }}>
+                          {permission.method} {permission.apiPath}
+                        </div>
                       </div>
-                      <div style={{ fontSize: "12px", color: "#666" }}>
-                        {permission.method} {permission.apiPath}
-                      </div>
-                    </div>
-                  </Checkbox>
-                </div>
-              ))}
-            </Checkbox.Group>
+                    </Checkbox>
+                  </div>
+                ))}
+              </Checkbox.Group>
+            )}
           </Form.Item>
         </Form>
       </Modal>

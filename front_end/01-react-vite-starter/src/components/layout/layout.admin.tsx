@@ -46,6 +46,12 @@ const LayoutAdmin = () => {
     }
   };
 
+  const hasPermission = (apiPath: string, method: string) => {
+    return user?.role?.permissions?.some(
+      (p: any) => p.apiPath === apiPath && p.method === method
+    );
+  };
+
   const items: MenuItem[] = [
     {
       label: <Link to="/admin">Dashboard</Link>,
@@ -64,16 +70,26 @@ const LayoutAdmin = () => {
         },
       ],
     },
-    {
-      label: <Link to="/admin/role">Manage Role</Link>,
-      key: "book",
-      icon: <ExceptionOutlined />,
-    },
-    {
-      label: <Link to="/admin/test2">Manage Orders</Link>,
-      key: "order",
-      icon: <DollarCircleOutlined />,
-    },
+    // Ẩn Manage Role nếu không có quyền xem role
+    ...(hasPermission("/api/v1/roles/fetch-all", "GET")
+      ? [
+          {
+            label: <Link to="/admin/role">Manage Role</Link>,
+            key: "book",
+            icon: <ExceptionOutlined />,
+          },
+        ]
+      : []),
+    // Ẩn Manage Permission nếu không có quyền xem permission
+    ...(hasPermission("/api/v1/permissions/fetch-all", "GET")
+      ? [
+          {
+            label: <Link to="/admin/permission">Manage Permission</Link>,
+            key: "order",
+            icon: <DollarCircleOutlined />,
+          },
+        ]
+      : []),
   ];
 
   const itemsDropdown = [
