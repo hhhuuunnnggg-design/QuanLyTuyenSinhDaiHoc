@@ -73,6 +73,7 @@ const PermissionPage = () => {
     {
       title: "Module",
       dataIndex: "module",
+      copyable: true,
       key: "module",
     },
     {

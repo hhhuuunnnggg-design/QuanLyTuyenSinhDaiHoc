@@ -123,11 +123,39 @@ public class PostController {
         }
     }
 
+    @GetMapping("/fetch-all")
+    @ApiMessage("fetch all posts")
+    public ResponseEntity<ResultPaginationDTO> getAllPosts(
+            @Filter Specification<Post> spec,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "100") int size) {
+
+        Pageable pageable = PageRequest.of(page - 1, size);
+        ResultPaginationDTO result = postService.fetchAllPosts(spec, pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
+
     @GetMapping
     public ResponseEntity<List<Post>> getAllPosts() {
         // Sử dụng getAllVisiblePosts() để chỉ lấy bài viết có visible=true và chưa bị
         // xóa
         return null;
+    }
+
+    // đây là quyền xóa của admin
+    @DeleteMapping("/{id}")
+    @ApiMessage("delete a post")
+    public ResponseEntity<Map<String, String>> delete(@PathVariable("id") long id) throws IdInvalidException {
+        // check exist by id
+        if (this.postService.getPostById(id) == null) {
+            throw new IdInvalidException("Post với id = " + id + " không tồn tại.");
+        }
+        this.postService.deletePost(id);
+        // Chuẩn bị response
+        Map<String, String> data = new HashMap<>();
+        data.put("message", "Đã xóa thành công");
+
+        return ResponseEntity.ok().body(data);
     }
 
     @GetMapping("/user/{userId}")
@@ -167,9 +195,18 @@ public class PostController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updatePost(@PathVariable Long id, @RequestBody Post postUpdate) {
-        Post updated = postService.updatePost(id, postUpdate);
-        return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
+    @ApiMessage("Update a post")
+    public ResponseEntity<PostResponseDTO> updatePost(@PathVariable Long id, @RequestBody Post postUpdate)
+            throws IdInvalidException {
+        // check exist by id
+        postUpdate.setId(id);
+        Post updated = postService.updatePostEntity(postUpdate);
+        if (updated == null) {
+            throw new IdInvalidException("Post với id = " + id + " không tồn tại.");
+        }
+        // update post
+        PostResponseDTO postDTO = postService.mapToPostResponseDTO(updated);
+        return ResponseEntity.ok(postDTO);
     }
 
     @GetMapping("/user/{userId}/feed")
@@ -184,18 +221,6 @@ public class PostController {
         // friends.add(user);
         // Lấy tất cả bài viết của người dùng và bạn bè
         return null;
-    }
-
-    @GetMapping("/fetch-all")
-    @ApiMessage("fetch all posts")
-    public ResponseEntity<ResultPaginationDTO> getAllPosts(
-            @Filter Specification<Post> spec,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "100") int size) {
-
-        Pageable pageable = PageRequest.of(page - 1, size);
-        ResultPaginationDTO result = postService.fetchAllPosts(spec, pageable);
-        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
 }

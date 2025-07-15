@@ -141,6 +141,19 @@ public class PostService {
                 .orElse(null);
     }
 
+    public Post updatePostEntity(Post postUpdate) {
+        Optional<Post> postOpt = postRepository.findById(postUpdate.getId());
+        if (postOpt.isPresent()) {
+            Post post = postOpt.get();
+            post.setContent(postUpdate.getContent());
+            post.setImageUrl(postUpdate.getImageUrl());
+            post.setVideoUrl(postUpdate.getVideoUrl());
+            post.setUpdatedAt(LocalDateTime.now());
+            return postRepository.save(post);
+        }
+        return null;
+    }
+
     // Xoá mềm bài viết
     public boolean deletePost(Long id) {
         Optional<Post> postOpt = postRepository.findById(id);
@@ -259,18 +272,32 @@ public class PostService {
     }
 
     public ResultPaginationDTO fetchAllPosts(Specification<Post> spec, Pageable pageable) {
-        Page<Post> page = postRepository.findAll(spec, pageable);
+        // Đảm bảo sort theo createdAt DESC nếu pageable chưa có sort
+        Pageable sortedPageable = pageable;
+        if (pageable.getSort().isUnsorted()) {
+            sortedPageable = org.springframework.data.domain.PageRequest.of(pageable.getPageNumber(),
+                    pageable.getPageSize(), org.springframework.data.domain.Sort.by("createdAt").descending());
+        }
+        Page<Post> page = postRepository.findAll(spec, sortedPageable);
         List<PostResponseDTO> postDTOs = page.getContent().stream()
                 .map(this::mapToPostResponseDTO)
                 .toList();
         ResultPaginationDTO result = new ResultPaginationDTO();
         ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
-        meta.setPage(pageable.getPageNumber() + 1);
-        meta.setPageSize(pageable.getPageSize());
+        meta.setPage(sortedPageable.getPageNumber() + 1);
+        meta.setPageSize(sortedPageable.getPageSize());
         meta.setTotal(page.getTotalElements());
         meta.setPages(page.getTotalPages());
         result.setMeta(meta);
         result.setResult(postDTOs);
         return result;
+    }
+
+    public void deletePost(long id) {
+        // delete permission_role
+        Optional<Post> postOptional = this.postRepository.findById(id);
+        Post currentPermission = postOptional.get();
+
+        this.postRepository.delete(currentPermission);
     }
 }

@@ -73,7 +73,7 @@ const LayoutAdmin = () => {
       ? [
           {
             label: <Link to="/admin/role">Manage Role</Link>,
-            key: "book",
+            key: "role",
             icon: <ExceptionOutlined />,
           },
         ]
@@ -83,7 +83,18 @@ const LayoutAdmin = () => {
       ? [
           {
             label: <Link to="/admin/permission">Manage Permission</Link>,
-            key: "order",
+            key: "permission",
+            icon: <DollarCircleOutlined />,
+          },
+        ]
+      : []),
+    //
+    // Ẩn Manage post nếu không có quyền xem post
+    ...(hasPermission("/api/v1/posts/fetch-all", "GET")
+      ? [
+          {
+            label: <Link to="/admin/post">Manage Post</Link>,
+            key: "post",
             icon: <DollarCircleOutlined />,
           },
         ]

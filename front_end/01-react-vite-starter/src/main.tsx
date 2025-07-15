@@ -20,6 +20,7 @@ import AppLeft from "./components/layout/app.left";
 import AppRight from "./components/layout/app.right";
 import LayoutAdmin from "./components/layout/layout.admin";
 import PermissionPage from "./pages/admin/permission";
+import PostPage from "./pages/admin/post";
 import RolePage from "./pages/admin/role";
 import UsersPage from "./pages/admin/users";
 import { fetchAccountThunk } from "./redux/slice/auth.slice";
@@ -69,6 +70,10 @@ const router = createBrowserRouter([
       {
         path: "permission",
         element: <PermissionPage />,
+      },
+      {
+        path: "post",
+        element: <PostPage />,
       },
     ],
   },

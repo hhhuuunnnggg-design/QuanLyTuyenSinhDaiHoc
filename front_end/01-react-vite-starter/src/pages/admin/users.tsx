@@ -14,6 +14,7 @@ import {
   Popconfirm,
   Select,
   Space,
+  Tag,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -88,6 +89,7 @@ const UsersPage = () => {
     {
       title: "Email",
       dataIndex: "email",
+      copyable: true,
       key: "email",
     },
 
@@ -122,9 +124,9 @@ const UsersPage = () => {
       key: "isBlocked",
       hideInSearch: true,
       render: (active: boolean) => (
-        <span style={{ color: active ? "green" : "red" }}>
+        <Tag style={{ color: active ? "green" : "red" }}>
           {active ? "Hoạt động" : "Không hoạt động"}
-        </span>
+        </Tag>
       ),
     },
     {
