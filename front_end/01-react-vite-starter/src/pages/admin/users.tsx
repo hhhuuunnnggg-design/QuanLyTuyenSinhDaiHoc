@@ -5,6 +5,7 @@ import axios from "@/services/axios.customize";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import ProTable from "@ant-design/pro-table";
 import {
+  Avatar,
   Button,
   Form,
   Input,
@@ -73,10 +74,23 @@ const UsersPage = () => {
       hideInSearch: true,
     },
     {
+      title: "avatar",
+      dataIndex: "avatar",
+      key: "avatar",
+      hideInSearch: true,
+      render: (avatar: string) => (
+        // <Avatar src={avatar} style={{ width: 32, height: 32 }} />
+        <Avatar src={avatar || undefined} style={{ background: "#87d068" }}>
+          {avatar?.[0] || "U"}
+        </Avatar>
+      ),
+    },
+    {
       title: "Email",
       dataIndex: "email",
       key: "email",
     },
+
     {
       title: "Họ và tên",
       dataIndex: "fullname",

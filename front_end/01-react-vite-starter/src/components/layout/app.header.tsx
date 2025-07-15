@@ -162,7 +162,14 @@ const AppHeader = () => {
               {!loading && isAuthenticated && user && (
                 <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
                   <Space className="nav-item">
-                    <Avatar src={user?.avatar} />
+                    <Avatar
+                      className="facebook-post__avatar"
+                      src={user.avatar || undefined}
+                      style={{ background: "#87d068" }}
+                    >
+                      {user.fullname?.[0] || "U"}
+                    </Avatar>
+
                     {user?.fullname}
                   </Space>
                 </Dropdown>

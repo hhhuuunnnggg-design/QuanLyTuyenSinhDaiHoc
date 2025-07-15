@@ -146,3 +146,9 @@ export const fetchAllPermissionsAPI = (params?: any) => {
   const urlBackend = "/api/v1/permissions/fetch-all";
   return axios.get<IBackendRes<any>>(urlBackend, { params });
 };
+
+// Fetch all posts API
+export const fetchAllPostsAPI = (params?: any) => {
+  const urlBackend = "/api/v1/posts/fetch-all";
+  return axios.get<any>(urlBackend, { params });
+};
