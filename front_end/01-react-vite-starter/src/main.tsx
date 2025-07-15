@@ -15,11 +15,13 @@ import { AppProvider } from "@/components/context/app.context";
 import { App, ConfigProvider } from "antd";
 import viVN from "antd/locale/vi_VN";
 import { AdminRoute } from "./components/common/protectedRoute";
+import AppCenter from "./components/layout/app.center";
+import AppLeft from "./components/layout/app.left";
+import AppRight from "./components/layout/app.right";
 import LayoutAdmin from "./components/layout/layout.admin";
 import PermissionPage from "./pages/admin/permission";
 import RolePage from "./pages/admin/role";
 import UsersPage from "./pages/admin/users";
-import HomePage from "./pages/client/home";
 import { fetchAccountThunk } from "./redux/slice/auth.slice";
 import "./styles/global.scss";
 
@@ -30,7 +32,13 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <HomePage />,
+        element: (
+          <div className="main-layout-flex">
+            <AppLeft className="app-left" />
+            <AppCenter className="app-center" />
+            <AppRight className="app-right" />
+          </div>
+        ),
       },
       {
         path: "/book",

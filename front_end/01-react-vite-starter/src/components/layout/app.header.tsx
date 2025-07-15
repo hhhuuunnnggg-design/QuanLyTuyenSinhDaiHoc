@@ -3,6 +3,12 @@ import { useCurrentApp } from "@/components/context/app.context";
 import { logout } from "@/redux/slice/auth.slice";
 import { logoutAPI } from "@/services/api";
 import {
+  ContainerOutlined,
+  GroupOutlined,
+  HomeOutlined,
+  VideoCameraOutlined,
+} from "@ant-design/icons";
+import {
   Avatar,
   Badge,
   Button,
@@ -13,9 +19,7 @@ import {
   Space,
 } from "antd";
 import { useState } from "react";
-import { FaVideo } from "react-icons/fa";
 import { FiBell, FiMessageCircle } from "react-icons/fi";
-import { VscHome } from "react-icons/vsc";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import "./app.header.scss";
@@ -92,36 +96,21 @@ const AppHeader = () => {
     },
   ];
   const navIcons1 = [
-    { icon: <VscHome />, key: "home", onClick: () => navigate("/") },
-    { icon: <FaVideo />, key: "video", onClick: () => console.log("Video") },
-    { icon: <FaVideo />, key: "video", onClick: () => console.log("Video") },
-
+    { icon: <HomeOutlined />, key: "home", onClick: () => navigate("/") },
     {
-      icon: (
-        <Badge count={8} size="small">
-          <FiBell />
-        </Badge>
-      ),
-      key: "friends",
-      onClick: () => console.log("Friend Requests"),
+      icon: <VideoCameraOutlined />,
+      key: "video",
+      onClick: () => console.log("Video"),
     },
     {
-      icon: (
-        <Badge count={2} size="small">
-          <FiMessageCircle />
-        </Badge>
-      ),
-      key: "messages",
-      onClick: () => console.log("Messages"),
+      icon: <GroupOutlined />,
+      key: "group",
+      onClick: () => console.log("group"),
     },
     {
-      icon: (
-        <Badge count={5} size="small">
-          <FiBell />
-        </Badge>
-      ),
-      key: "notifications",
-      onClick: () => console.log("Notifications"),
+      icon: <ContainerOutlined />,
+      key: "group",
+      onClick: () => console.log("group"),
     },
   ];
 
@@ -158,7 +147,7 @@ const AppHeader = () => {
                   key={item.key}
                   className="nav-item"
                   onClick={item.onClick}
-                  style={{ margin: "10px" }}
+                  style={{ margin: "40px" }}
                 >
                   {item.icon}
                 </div>

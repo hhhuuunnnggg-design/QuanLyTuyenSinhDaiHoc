@@ -1,3 +1,25 @@
 * {
-    margin: 0;
+  margin: 0;
+}
+
+.main-layout-flex {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.main-layout-flex > div {
+  flex: 1; /* Các phần tử chia đều không gian */
+}
+
+.app-left {
+  order: 1; /* Bên trái */
+}
+
+.app-center {
+  order: 2; /* Ở giữa */
+}
+
+.app-right {
+  order: 3; /* Bên phải */
 }
