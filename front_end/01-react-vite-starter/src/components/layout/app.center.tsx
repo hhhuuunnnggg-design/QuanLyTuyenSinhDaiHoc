@@ -4,20 +4,42 @@ import {
   CommentOutlined,
   LikeOutlined,
   RollbackOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
-import { Avatar, Button, Card, Empty, Layout, Spin, message } from "antd";
+import {
+  Avatar,
+  Button,
+  Card,
+  Empty,
+  Layout,
+  Spin,
+  Upload,
+  message,
+} from "antd";
 import { Content } from "antd/es/layout/layout";
 import Sider from "antd/es/layout/Sider";
 import dayjs from "dayjs";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import "./app.center.scss";
-import { Upload } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import ModalUpload from "./modal.upload";
 
 const AppCenter = ({ className }: { className?: string }) => {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // prop bên modal
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const openUploadModal = () => setIsUploadModalOpen(true);
+  const closeUploadModal = () => setIsUploadModalOpen(false);
+  const handleReloadPosts = () => {
+    // Gọi lại API lấy danh sách bài viết
+    fetchAllPostsAPI().then((res) => {
+      if (res?.data?.result) {
+        setPosts(res.data.result);
+      }
+    });
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -50,7 +72,7 @@ const AppCenter = ({ className }: { className?: string }) => {
     textAlign: "center",
     lineHeight: "120px",
     color: "#fff",
-    backgroundColor: "#1677ff",
+    backgroundColor: "white",
   };
 
   const footerStyle: React.CSSProperties = {
@@ -133,7 +155,7 @@ const AppCenter = ({ className }: { className?: string }) => {
 
         <Layout>
           <Sider width="25%" style={siderStyle}>
-            Sider
+            Sider123132
           </Sider>
           <Content style={contentStyle}>
             <Upload
@@ -155,10 +177,22 @@ const AppCenter = ({ className }: { className?: string }) => {
             </Upload>
           </Content>
           <Sider width="25%" style={siderStyle}>
-            Sider
+            <Button color="default" variant="text" onClick={openUploadModal}>
+              <img
+                src="https://static.xx.fbcdn.net/rsrc.php/v4/y7/r/Ivw7nhRtXyo.png?_nc_eui2=AeGMJq8u7sIW_CDU_bSE4VhykBVQC4m7dx6QFVALibt3HjppS8A3MyZJgA_G-pVfvu4bwgNQW9UDwtbBqxxIXLIQ"
+                alt=""
+              />
+              Ảnh/Video
+            </Button>
           </Sider>
         </Layout>
       </Layout>
+
+      <ModalUpload
+        isOpen={isUploadModalOpen}
+        onClose={closeUploadModal}
+        onSuccess={handleReloadPosts}
+      />
 
       <div className="facebook-post-list" style={{ width: "100%" }}>
         {loading ? (

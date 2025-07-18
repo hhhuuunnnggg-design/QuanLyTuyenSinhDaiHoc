@@ -86,7 +86,7 @@ const PostPage = () => {
             <video src={record.videoUrl} style={mediaStyle} controls muted />
           );
         } else {
-          return <Tag color="default">Không có</Tag>;
+          return <Tag color="default">bài post text</Tag>;
         }
       },
     },
