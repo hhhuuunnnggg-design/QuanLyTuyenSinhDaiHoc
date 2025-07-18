@@ -52,7 +52,7 @@ public class AuthController {
     }
 
     @PostMapping("/auth/login")
-    public ResponseEntity<ResLoginDTO> login(@Valid @RequestBody ReqLoginDTO loginDto) {
+    public ResponseEntity<ResLoginDTO> login(@Valid @RequestBody ReqLoginDTO loginDto) throws IdInvalidException {
         // Nạp input gồm email/password vào Security
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                 loginDto.getEmail(), loginDto.getPassword());
@@ -65,7 +65,13 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         ResLoginDTO res = new ResLoginDTO();
+
         User currentUserDB = this.userService.handleGetUserByUsername(loginDto.getEmail());
+
+        if (currentUserDB.getIs_blocked() == true) {
+            throw new IdInvalidException("Tài khoản của bạn đã bị khóa");
+        }
+
         String fullName = currentUserDB.getLastName() + " " + currentUserDB.getFirstName();
         if (currentUserDB != null) {
             ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(
@@ -75,6 +81,7 @@ public class AuthController {
                     currentUserDB.getIs_admin(),
                     currentUserDB.getAvatar(),
                     currentUserDB.getCoverPhoto(),
+                    currentUserDB.getIs_blocked(),
                     currentUserDB.getRole());
             res.setUser(userLogin);
         }
@@ -119,8 +126,10 @@ public class AuthController {
             userLogin.setFullname(currentUserDB.getLastName() + " " + currentUserDB.getFirstName());
             userLogin.setRole(currentUserDB.getRole());
             userLogin.setIs_admin(currentUserDB.getIs_admin());
+            userLogin.setIs_blocked(currentUserDB.getIs_blocked());
             userLogin.setAvatar(currentUserDB.getAvatar());
             userLogin.setCoverPhoto(currentUserDB.getCoverPhoto());
+            userLogin.setIs_blocked(currentUserDB.isBlocked());
             userGetAccount.setUser(userLogin);
         }
 
@@ -156,6 +165,7 @@ public class AuthController {
                     currentUserDB.getIs_admin(),
                     currentUserDB.getAvatar(),
                     currentUserDB.getCoverPhoto(),
+                    currentUserDB.getIs_blocked(),
                     currentUserDB.getRole());
             res.setUser(userLogin);
         }

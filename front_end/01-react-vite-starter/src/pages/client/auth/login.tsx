@@ -20,7 +20,6 @@ const LoginPage = () => {
     try {
       setIsSubmit(true);
       const res = await loginAPI(values.email, values.password);
-      console.log("Login response:", res);
 
       // Check if response has the correct structure
       if (res && res.data) {
@@ -34,7 +33,6 @@ const LoginPage = () => {
         }
 
         localStorage.setItem("access_token", res.data.access_token);
-        console.log("Token saved:", res.data.access_token);
 
         // Update Redux store - context will automatically sync
         dispatch(
@@ -54,8 +52,7 @@ const LoginPage = () => {
           navigate("/");
         }
       } else {
-        console.error("Invalid response structure:", res);
-        message.error("Response không đúng định dạng!");
+        message.error(res.mesage);
       }
     } catch (error: any) {
       console.error("Login error:", error);

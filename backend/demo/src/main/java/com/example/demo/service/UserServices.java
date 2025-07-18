@@ -122,6 +122,15 @@ public class UserServices {
                 .build();
     }
 
+    public User handleChangeActivityUser(Long id) {
+        User currentUser = this.handleFindByIdUser(id);
+        if (currentUser != null) {
+            currentUser.setIs_blocked(!currentUser.isBlocked());
+            return this.userServiceRepository.save(currentUser);
+        }
+        return null;
+    }
+
     // sửa
     public User handleUpdateUser(User updateUser) {
         User currentUser = this.handleFindByIdUser(updateUser.getId());

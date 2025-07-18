@@ -1,7 +1,7 @@
 import { deletePostAPI, fetchAllPostsAPI } from "@/services/api";
 import { DeleteOutlined } from "@ant-design/icons";
 import ProTable from "@ant-design/pro-table";
-import { Avatar, Button, message, Popconfirm, Space, Tag } from "antd";
+import { Avatar, Button, Image, message, Popconfirm, Space, Tag } from "antd";
 import { useRef } from "react";
 
 interface IUser {
@@ -68,23 +68,29 @@ const PostPage = () => {
       key: "media",
       width: 120,
       hideInSearch: true,
-      render: (_: any, record: IPostData) =>
-        record.imageUrl ? (
-          <img
-            src={record.imageUrl}
-            alt="img"
-            style={{ width: 60, borderRadius: 4 }}
-          />
-        ) : record.videoUrl ? (
-          <video
-            src={record.videoUrl}
-            style={{ width: 60, borderRadius: 4 }}
-            controls
-          />
-        ) : (
-          <Tag color="default">Không có</Tag>
-        ),
+      render: (_: any, record: IPostData) => {
+        const mediaStyle: React.CSSProperties = {
+          width: 60,
+          height: 60,
+          borderRadius: "8px",
+          objectFit: "cover",
+          border: "2px solid #f0f0f0",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          cursor: "pointer",
+        };
+
+        if (record.imageUrl) {
+          return <Image src={record.imageUrl} alt="img" style={mediaStyle} />;
+        } else if (record.videoUrl) {
+          return (
+            <video src={record.videoUrl} style={mediaStyle} controls muted />
+          );
+        } else {
+          return <Tag color="default">Không có</Tag>;
+        }
+      },
     },
+
     {
       title: "Ngày tạo",
       dataIndex: "createdAt",

@@ -28,6 +28,7 @@ public class ResLoginDTO {
         Boolean is_admin;
         String avatar;
         String coverPhoto;
+        Boolean is_blocked;
         Role role;
     }
 

@@ -1,6 +1,11 @@
 import Restricted from "@/components/common/restricted";
 import { useCurrentApp } from "@/components/context/app.context";
-import { createUserAPI, deleteUserAPI, updateUserAPI } from "@/services/api";
+import {
+  changeUserActivityAPI,
+  createUserAPI,
+  deleteUserAPI,
+  updateUserAPI,
+} from "@/services/api";
 import axios from "@/services/axios.customize";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import ProTable from "@ant-design/pro-table";
@@ -8,6 +13,7 @@ import {
   Avatar,
   Button,
   Form,
+  Image,
   Input,
   message,
   Modal,
@@ -17,6 +23,7 @@ import {
   Tag,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 interface IUserData {
@@ -75,16 +82,47 @@ const UsersPage = () => {
       hideInSearch: true,
     },
     {
-      title: "avatar",
+      title: "Avatar",
       dataIndex: "avatar",
       key: "avatar",
       hideInSearch: true,
-      render: (avatar: string) => (
-        // <Avatar src={avatar} style={{ width: 32, height: 32 }} />
-        <Avatar src={avatar || undefined} style={{ background: "#87d068" }}>
-          {avatar?.[0] || "U"}
-        </Avatar>
-      ),
+      width: 80,
+      render: (avatar: string, record: IUserData) => {
+        if (avatar) {
+          return (
+            <Image
+              width={48}
+              height={48}
+              src={avatar}
+              style={{
+                borderRadius: "50%",
+                objectFit: "cover",
+                border: "2px solid #f0f0f0",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                cursor: "pointer",
+              }}
+              //preview={{}}
+              fallback="https://scontent.fsgn5-14.fna.fbcdn.net/v/t1.30497-1/453178253_471506465671661_2781666950760530985_n.png?stp=dst-png_s200x200&_nc_cat=1&ccb=1-7&_nc_sid=136b72&_nc_eui2=AeEcaJ2EWO-Y97M0W_twzJFDWt9TLzuBU1Ba31MvO4FTUJeQc-rZrByTKQxfnhpH7E1mwB5YcCUfBjeNd_PoRyN4&_nc_ohc=262Ge7eTFLwQ7kNvwExhYDu&_nc_oc=AdmTVjb4wkGSVv7F3xl_mX27CJuhgWoiBKzhWdIgbrlywYRJTY99hdPBKzbHMfH4QiI3rXWF9MBGBYiUh715dzsE&_nc_zt=24&_nc_ht=scontent.fsgn5-14.fna&oh=00_AfQF0Mclro7BXOHaaeXFVFAWDumrLS93NhXoDam6IQjcrA&oe=68A1283A"
+            />
+          );
+        }
+        // Fallback: Avatar với chữ cái đầu
+        return (
+          <Avatar
+            size={48}
+            style={{
+              backgroundColor: "#1890ff",
+              color: "white",
+              fontWeight: "bold",
+              fontSize: "20px",
+              border: "2px solid #f0f0f0",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            }}
+          >
+            {record.email?.[0]?.toUpperCase() ?? "U"}
+          </Avatar>
+        );
+      },
     },
     {
       title: "Email",
@@ -120,12 +158,12 @@ const UsersPage = () => {
     },
     {
       title: "Trạng thái",
-      dataIndex: "isBlocked",
-      key: "isBlocked",
+      dataIndex: "blocked",
+      key: "blocked",
       hideInSearch: true,
-      render: (active: boolean) => (
-        <Tag style={{ color: active ? "green" : "red" }}>
-          {active ? "Hoạt động" : "Không hoạt động"}
+      render: (blocked: boolean) => (
+        <Tag color={blocked ? "red" : "green"}>
+          {blocked ? "Bị khóa" : "Hoạt động"}
         </Tag>
       ),
     },
@@ -144,6 +182,7 @@ const UsersPage = () => {
         <Space>
           <Restricted permission="/api/v1/users/{id}" method="PUT">
             <Button
+              className="edit-user"
               style={{
                 backgroundColor: "rgb(255 200 53)", // màu cam đậm (Ant Design orange-6)
                 borderColor: "rgb(255 200 53)",
@@ -155,6 +194,29 @@ const UsersPage = () => {
             >
               <EditOutlined />
             </Button>
+          </Restricted>
+          <Restricted
+            permission="/api/v1/users/changeActivity/{id}"
+            method="PUT"
+          >
+            {record.blocked ? (
+              <Button
+                type="primary"
+                size="small"
+                danger
+                onClick={() => handleChangeActivity(record.id, record.blocked)}
+              >
+                <FaEyeSlash />
+              </Button>
+            ) : (
+              <Button
+                type="primary"
+                size="small"
+                onClick={() => handleChangeActivity(record.id, record.blocked)}
+              >
+                <FaEye />
+              </Button>
+            )}
           </Restricted>
           <Restricted permission="/api/v1/users/{id}" method="DELETE">
             <Popconfirm
@@ -189,6 +251,7 @@ const UsersPage = () => {
   };
 
   const handleEdit = (user: any) => {
+    console.log("handleEdit", user.blocked);
     setEditingUser(user);
     editForm.setFieldsValue({
       email: user.email,
@@ -221,6 +284,21 @@ const UsersPage = () => {
       actionRef.current?.reload();
     } catch (error: any) {
       message.error("Xóa người dùng thất bại!");
+    }
+  };
+
+  const handleChangeActivity = async (
+    userId: number,
+    currentStatus: boolean
+  ) => {
+    try {
+      await changeUserActivityAPI(userId);
+      const action = currentStatus ? "mở khóa" : "khóa";
+      message.success(`${action} tài khoản thành công!`);
+      // Refresh table
+      actionRef.current?.reload();
+    } catch (error: any) {
+      message.error("Thay đổi trạng thái tài khoản thất bại!");
     }
   };
 

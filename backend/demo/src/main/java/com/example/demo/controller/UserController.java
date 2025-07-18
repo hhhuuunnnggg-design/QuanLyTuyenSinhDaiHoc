@@ -78,6 +78,20 @@ public class UserController {
         return ResponseEntity.ok(this.userService.convertToResUserDTO(fetUser));
     }
 
+    @PutMapping("/changeActivity/{id}")
+    @ApiMessage("ChangeActivity a user")
+    public ResponseEntity<Map<String, String>> changeActivityUser(
+            @PathVariable Long id) throws IdInvalidException {
+        User updatedUser = userService.handleChangeActivityUser(id);
+        if (updatedUser == null) {
+            throw new IdInvalidException("User với id = " + id + " không tồn tại...");
+        }
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Đã thay đổi trạng thái " + updatedUser.getEmail() + " thành "
+                + (updatedUser.isBlocked() ? "khóa" : "mở khóa"));
+        return ResponseEntity.ok(response);
+    }
+
     @PutMapping("/{id}")
     @ApiMessage("Update a user")
     public ResponseEntity<ResUpdateUserDTO> updateUser(

@@ -24,6 +24,11 @@ export const ALL_PERMISSIONS = {
       apiPath: "/api/v1/users/{id}",
       module: "USERS",
     },
+    CHANGE_ACTIVITY: {
+      method: "PUT",
+      apiPath: "/api/v1/users/changeActivity/{id}",
+      module: "USERS",
+    },
   },
 };
 
