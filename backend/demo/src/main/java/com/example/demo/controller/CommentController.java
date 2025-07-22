@@ -49,7 +49,7 @@ public class CommentController {
     private SimpMessagingTemplate messagingTemplate;
 
     // Tạo bình luận mới
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<Comment> addComment(
             @RequestParam Long postId,
             @RequestParam Long userId,

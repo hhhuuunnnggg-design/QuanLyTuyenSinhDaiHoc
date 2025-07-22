@@ -109,9 +109,9 @@ const AppHeader = () => {
     },
     {
       icon: <ContainerOutlined />,
-      key: "group",
-      onClick: () => console.log("group"),
-    },
+      key: "feed",
+      onClick: () => console.log("feed"),
+    }, // sửa key
   ];
 
   return (
@@ -142,9 +142,9 @@ const AppHeader = () => {
               />
             </div>
             <div className="page-header__center">
-              {navIcons1.map((item) => (
+              {navIcons1.map((item, index) => (
                 <div
-                  key={item.key}
+                  key={`${item.key}-${index}`}
                   className="nav-item"
                   onClick={item.onClick}
                   style={{ margin: "40px" }}
@@ -154,8 +154,12 @@ const AppHeader = () => {
               ))}
             </div>
             <nav className="page-header__nav">
-              {navIcons.map((item) => (
-                <div key={item.key} className="nav-item" onClick={item.onClick}>
+              {navIcons.map((item, index) => (
+                <div
+                  key={`${item.key}-${index}`}
+                  className="nav-item"
+                  onClick={item.onClick}
+                >
                   {item.icon}
                 </div>
               ))}
