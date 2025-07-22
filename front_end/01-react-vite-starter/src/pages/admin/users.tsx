@@ -57,6 +57,31 @@ const UsersPage = () => {
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
   const actionRef = useRef<any>();
+  const [roleEnum, setRoleEnum] = useState<Record<string, { text: string }>>(
+    {}
+  );
+
+  useEffect(() => {
+    async function fetchRoles() {
+      try {
+        const res = await axios.get("/api/v1/roles/fetch-all", {
+          params: { page: 1, size: 100 },
+        });
+        const roles = res.data?.result || [];
+
+        const enumData: Record<string, { text: string }> = {};
+        roles.forEach((role: any) => {
+          enumData[role.name] = { text: role.name };
+        });
+
+        setRoleEnum(enumData); // ✅ cập nhật valueEnum
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách roles:", error);
+      }
+    }
+
+    fetchRoles();
+  }, []);
 
   useEffect(() => {
     console.log("UsersPage - User:", user);
@@ -148,13 +173,7 @@ const UsersPage = () => {
       dataIndex: ["role", "name"],
       key: "role",
       valueType: "select" as const,
-      valueEnum: {
-        ADMIN: { text: "Admin" },
-        USER: { text: "User" },
-        TEST: { text: "Test" },
-        TEST1: { text: "Test1" },
-        TEST2: { text: "Test2" },
-      },
+      valueEnum: roleEnum,
     },
     {
       title: "Trạng thái",
