@@ -1,15 +1,19 @@
 .header-container {
+  // background-color: red;
   .page-header {
     display: flex;
     user-select: none;
     -moz-user-select: none;
     -webkit-user-select: none;
     height: 55px;
-    background-color: #234fbf; // Facebook blue
+    //background-color: #717b96; // Facebook blue
+    background-color: #ffffff;
     color: #fff;
     width: 100%;
     max-width: 100%;
     line-height: 55px;
+    border-bottom: 1px solid #ddd;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
     &__top {
       display: flex;
@@ -67,11 +71,11 @@
       outline: none;
       padding: 5px 10px;
       border-radius: 15px;
-      border: 1px solid #ddd;
-      background-color: #fff;
+      border: 0px solid #ddd;
+      background-color: #f0f2f5;
       color: #000;
       flex: 1;
-      max-width: 300px;
+      max-width: 230px;
     }
 
     .nav-item {

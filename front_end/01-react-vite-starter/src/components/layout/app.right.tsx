@@ -1,4 +1,5 @@
 import axios from "@/services/axios.customize";
+import { OpenAIFilled } from "@ant-design/icons";
 import { Avatar, Button, Divider, List, Space, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -115,6 +116,25 @@ const AppRight = ({ className }: { className?: string }) => {
         paddingTop: "55px",
       }}
     >
+      <Button
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "fixed",
+          bottom: "16px",
+          right: "16px",
+          background: "#fff",
+          width: "48px",
+          height: "48px",
+          borderRadius: "9999px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+          zIndex: 1000,
+        }}
+      >
+        <OpenAIFilled style={{ fontSize: 24 }} />
+      </Button>
+
       {/* Quảng cáo */}
       <Title level={4}>Được tài trợ</Title>
       <div className="ad-container">
