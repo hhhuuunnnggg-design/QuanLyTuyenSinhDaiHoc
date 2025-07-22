@@ -1,0 +1,13 @@
+.header-container {
+  .page-header {
+    position: fixed; // Thêm dòng này
+    top: 0; // Thêm dòng này
+    left: 0; // Thêm dòng này
+    width: 100%; // Đảm bảo header full width
+    z-index: 1000; // Đảm bảo header nổi trên các thành phần khác
+  }
+}
+
+.app-center-content {
+  padding-top: 55px; // hoặc margin-top: 55px;
+}

@@ -112,6 +112,7 @@ const AppRight = ({ className }: { className?: string }) => {
         width: "360px",
         height: "100vh",
         overflowY: "auto",
+        paddingTop: "55px",
       }}
     >
       {/* Quảng cáo */}

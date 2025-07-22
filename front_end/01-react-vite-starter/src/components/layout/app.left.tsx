@@ -121,6 +121,7 @@ const AppLeft = ({ className }: { className?: string }) => {
         padding: "16px",
         height: "100vh",
         overflowY: "auto",
+        paddingTop: "55px",
       }}
     >
       <List

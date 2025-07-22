@@ -57,7 +57,6 @@ const AppCenter = ({ className }: { className?: string }) => {
   };
 
   const layoutStyle: React.CSSProperties = {
-    marginTop: 20,
     borderRadius: 8,
     overflow: "hidden",
     width: "100%",
@@ -66,12 +65,13 @@ const AppCenter = ({ className }: { className?: string }) => {
 
   const contentStyle: React.CSSProperties = {
     textAlign: "center",
-    backgroundColor: "#fff",
+    // backgroundColor: "#fff",
+    backgroundColor: "rgb(240, 242, 245)",
     padding: "16px",
   };
   return (
     <div className={className}>
-      <Layout style={layoutStyle}>
+      <Layout className="app-center-content" style={layoutStyle}>
         <Content style={contentStyle}>
           <div style={{ maxWidth: 600, margin: "0 auto" }}>
             <Card
