@@ -1,10 +1,16 @@
 import { useCurrentApp } from "@/components/context/app.context";
 import { createPostAPI } from "@/services/api";
-import { PlusOutlined } from "@ant-design/icons";
+import {
+  EnvironmentOutlined,
+  PlusOutlined,
+  SmileOutlined,
+  TagOutlined,
+} from "@ant-design/icons";
 import type { GetProp } from "antd";
-import { Divider, Modal, Upload, UploadProps, message } from "antd";
+import { Avatar, Divider, Modal, Upload, UploadProps, message } from "antd";
 import { Image, UploadFile } from "antd/lib";
 import React, { useState } from "react";
+import "./ModalUpload.scss";
 
 interface ModalUploadProps {
   isOpen: boolean;
@@ -47,10 +53,10 @@ const ModalUpload: React.FC<ModalUploadProps> = ({
     setFileList(newFileList);
 
   const uploadButton = (
-    <button style={{ border: 0, background: "none" }} type="button">
+    <div className="upload-button">
       <PlusOutlined />
-      <div style={{ marginTop: 8 }}>Upload</div>
-    </button>
+      <div>Ảnh/Video</div>
+    </div>
   );
 
   const handleSubmit = async () => {
@@ -84,21 +90,42 @@ const ModalUpload: React.FC<ModalUploadProps> = ({
 
   return (
     <Modal
-      title="Tạo bài viết"
+      title={
+        <div className="modal-header">
+          <h2>Tạo bài viết</h2>
+        </div>
+      }
       open={isOpen}
       onOk={handleSubmit}
       onCancel={onClose}
       confirmLoading={loading}
+      okText="Đăng"
+      cancelText="Hủy"
+      width={520}
+      centered
+      className="post-modal"
     >
+      <div className="user-info">
+        <Avatar
+          src={
+            user?.avatar ||
+            "https://scontent.fsgn5-10.fna.fbcdn.net/v/t1.30497-1/453178253_471506465671661_2781666950760530985_n.png?stp=dst-png_s200x200&_nc_cat=110&ccb=1-7&_nc_sid=136b72&_nc_ohc=262Ge7eTFLwQ7kNvwF8PpTe&_nc_oc=AdlBMf4kbbKKgwkljQi9ZwvF1XWbT-H3hzjC8qM6c1SiS_9LBWZ0DrCLs-5PezUAQEtbFfI6fLYOFibxDh_i-mY4&_nc_zt=24&_nc_ht=scontent.fsgn5-10.fna&oh=00_AfQyMtxGUfKX2p2Tutp5reEau2n3TnF5A8Lz80vkHCdG6A&oe=68A1607A"
+          }
+          size={40}
+        />
+        <div className="user-details">
+          <span className="user-name">{user?.fullname}</span>
+          <span className="privacy-option">Bạn bè</span>
+        </div>
+      </div>
       <textarea
-        placeholder="Mời bạn nhập nội dung"
+        placeholder="Hùng ơi, bạn đang nghĩ gì thế?"
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        style={{ width: "100%", minHeight: 80, marginBottom: 12 }}
+        className="content-input"
       />
       <Divider />
-      <>
-        <p>Mời bạn tải ảnh lên</p>
+      <div className="media-upload">
         <Upload
           action=""
           listType="picture-card"
@@ -106,6 +133,7 @@ const ModalUpload: React.FC<ModalUploadProps> = ({
           onPreview={handlePreview}
           onChange={handleChange}
           beforeUpload={() => false}
+          accept="image/*,video/*"
         >
           {fileList.length >= 1 ? null : uploadButton}
         </Upload>
@@ -120,7 +148,19 @@ const ModalUpload: React.FC<ModalUploadProps> = ({
             src={previewImage}
           />
         )}
-      </>
+      </div>
+      <Divider />
+      <div className="action-buttons">
+        <span className="action-button" title="Biểu tượng cảm xúc">
+          <SmileOutlined />
+        </span>
+        <span className="action-button" title="Gắn thẻ người khác">
+          <TagOutlined />
+        </span>
+        <span className="action-button" title="Check in">
+          <EnvironmentOutlined />
+        </span>
+      </div>
     </Modal>
   );
 };

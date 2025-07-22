@@ -58,7 +58,9 @@ public class DatabaseInitializer implements CommandLineRunner {
             arr.add(createPermission("Tạo người dùng", "/api/v1/users/add-user", "POST", "USERS"));
             arr.add(createPermission("Xóa người dùng", "/api/v1/users/{id}", "DELETE", "USERS"));
             arr.add(createPermission("Cập nhật người dùng", "/api/v1/users/{id}", "PUT", "USERS"));
-
+            arr.add(createPermission("thay đổi trạng thái người dùng", "/api/v1/users/changeActivity/{id}", "PUT",
+                    "USERS"));
+            // User permissions
             // Permissions
             arr.add(createPermission("Tạo quyền mới", "/api/v1/permissions", "POST", "PERMISSIONS"));
             arr.add(createPermission("Cập nhật quyền", "/api/v1/permissions/{id}", "PUT", "PERMISSIONS"));
@@ -67,11 +69,21 @@ public class DatabaseInitializer implements CommandLineRunner {
             arr.add(createPermission("Xem danh sách quyền", "/api/v1/permissions/fetch-all", "GET", "PERMISSIONS"));
 
             // Roles
-            arr.add(createPermission("Tạo vai trò mới", "/api/v1/roles", "POST", "ROLES"));
+            arr.add(createPermission("Tạo vai trò mới", "/api/v1/roles/create", "POST", "ROLES"));
             arr.add(createPermission("Cập nhật vai trò", "/api/v1/roles/{id}", "PUT", "ROLES"));
             arr.add(createPermission("Xóa vai trò", "/api/v1/roles/{id}", "DELETE", "ROLES"));
             arr.add(createPermission("Xem vai trò", "/api/v1/roles/{id}", "GET", "ROLES"));
             arr.add(createPermission("Xem danh sách vai trò", "/api/v1/roles/fetch-all", "GET", "ROLES"));
+
+            // Posts
+            // arr.add(createPermission("Tạo bài viết", "/api/v1/posts/create", "POST",
+            // "POSTS"));
+            arr.add(createPermission("Xóa bài viết", "/api/v1/posts/{id}", "DELETE", "POSTS"));
+            // arr.add(createPermission("Cập nhật bài viết", "/api/v1/posts/{id}", "PUT",
+            // "POSTS"));
+            // arr.add(createPermission("Xem bài viết", "/api/v1/posts/{id}", "GET",
+            // "POSTS"));
+            arr.add(createPermission("Xem danh sách bài viết", "/api/v1/posts/fetch-all", "GET", "POSTS"));
 
             this.permissionRepository.saveAll(arr);
         }

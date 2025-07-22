@@ -10,12 +10,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.domain.Post;
 import com.example.demo.domain.Role;
 import com.example.demo.domain.User;
 import com.example.demo.domain.dto.ResultPaginationDTO;
 import com.example.demo.domain.response.ResCreateUserDTO;
 import com.example.demo.domain.response.ResUpdateUserDTO;
 import com.example.demo.domain.response.ResUserDTO;
+import com.example.demo.repository.PostRepository;
 import com.example.demo.repository.UserServiceRepository;
 
 import lombok.AccessLevel;
@@ -30,6 +32,9 @@ public class UserServices {
     UserServiceRepository userServiceRepository;
 
     @Autowired
+    private PostRepository postRepository;
+
+    @Autowired
     RoleService roleService;
 
     public User handleGetUserByUsernames(String username) {
@@ -41,6 +46,12 @@ public class UserServices {
             throw new RuntimeException("Tài khoản đã bị khóa. Vui lòng liên hệ admin.");
         }
         return user;
+    }
+
+    // tìm user tạo ra bài viết dựa vào postId
+    public User getUserByPostId(Long postId) {
+        Optional<Post> postOpt = postRepository.findById(postId); // tìm bài viết dựa vào postId
+        return postOpt.map(Post::getUser).orElse(null); // lấy user tạo ra bài viết đó
     }
 
     public User handleGetUserByUsername(String username) {

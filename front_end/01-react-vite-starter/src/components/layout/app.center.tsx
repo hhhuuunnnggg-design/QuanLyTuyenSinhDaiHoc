@@ -1,39 +1,25 @@
-// app.left.tsx
 import { createPostAPI, fetchAllPostsAPI } from "@/services/api";
-import {
-  CommentOutlined,
-  LikeOutlined,
-  RollbackOutlined,
-  UploadOutlined,
-} from "@ant-design/icons";
-import {
-  Avatar,
-  Button,
-  Card,
-  Empty,
-  Layout,
-  Spin,
-  Upload,
-  message,
-} from "antd";
+import { Avatar, Button, Card, Divider, Input, Layout, message } from "antd";
 import { Content } from "antd/es/layout/layout";
-import Sider from "antd/es/layout/Sider";
-import dayjs from "dayjs";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useCurrentApp } from "../context/app.context";
 import "./app.center.scss";
+import FacebookPostList from "./FacebookPostList";
 import ModalUpload from "./modal.upload";
 
+const { TextArea } = Input;
+
 const AppCenter = ({ className }: { className?: string }) => {
+  const { user } = useCurrentApp();
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-
-  // prop bên modal
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
   const openUploadModal = () => setIsUploadModalOpen(true);
   const closeUploadModal = () => setIsUploadModalOpen(false);
+
   const handleReloadPosts = () => {
-    // Gọi lại API lấy danh sách bài viết
     fetchAllPostsAPI().then((res) => {
       if (res?.data?.result) {
         setPosts(res.data.result);
@@ -51,42 +37,6 @@ const AppCenter = ({ className }: { className?: string }) => {
       })
       .finally(() => setLoading(false));
   }, []);
-  const headerStyle: React.CSSProperties = {
-    // textAlign: 'center',
-    // color: '#fff',
-    // height: 64,
-    // paddingInline: 48,
-    // lineHeight: '64px',
-    // backgroundColor: '#4096ff',
-  };
-
-  const contentStyle: React.CSSProperties = {
-    textAlign: "center",
-    minHeight: 120,
-    lineHeight: "120px",
-    color: "#fff",
-    backgroundColor: "#0958d9",
-  };
-
-  const siderStyle: React.CSSProperties = {
-    textAlign: "center",
-    lineHeight: "120px",
-    color: "#fff",
-    backgroundColor: "white",
-  };
-
-  const footerStyle: React.CSSProperties = {
-    textAlign: "center",
-    color: "#fff",
-    backgroundColor: "#4096ff",
-  };
-
-  const layoutStyle = {
-    marginTop: 20,
-    borderRadius: 8,
-    overflow: "hidden",
-    width: "100%",
-  };
 
   const onFinish = async (values: any) => {
     setLoading(true);
@@ -98,7 +48,7 @@ const AppCenter = ({ className }: { className?: string }) => {
         file,
       });
       message.success("Tạo bài viết thành công!");
-      console.log("API response:", res);
+      handleReloadPosts();
     } catch (err) {
       message.error("Tạo bài viết thất bại!");
     } finally {
@@ -106,181 +56,116 @@ const AppCenter = ({ className }: { className?: string }) => {
     }
   };
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleButtonClick = () => {
-    fileInputRef.current?.click();
+  const layoutStyle: React.CSSProperties = {
+    marginTop: 20,
+    borderRadius: 8,
+    overflow: "hidden",
+    width: "100%",
+    backgroundColor: "#fff",
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    // Ví dụ: hardcode content và userId, bạn có thể lấy từ state/form
-    try {
-      await createPostAPI({
-        content: "Up avatar mới",
-        userId: 47, // hoặc lấy từ user đang đăng nhập
-        file,
-      });
-      message.success("Upload thành công!");
-    } catch {
-      message.error("Upload thất bại!");
-    }
+  const contentStyle: React.CSSProperties = {
+    textAlign: "center",
+    backgroundColor: "#fff",
+    padding: "16px",
   };
-
   return (
     <div className={className}>
       <Layout style={layoutStyle}>
-        <Content style={headerStyle}>
-          <Layout>
-            <Sider width="25%" style={siderStyle}>
-              <Link to="/" className="logo">
-                <title>Facebook</title>
-                <img
-                  style={{ width: "40px", height: "40px" }}
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Logo_%282019%29.png/1024px-Facebook_Logo_%282019%29.png"
-                  alt=""
-                />
-              </Link>
-            </Sider>
-            <Content style={contentStyle}>
-              <input
-                className="input-search"
-                type="text"
-                placeholder="Tìm kiếm trên Facebook"
-              />
-            </Content>
-          </Layout>
-        </Content>
-
-        <Layout>
-          <Sider width="25%" style={siderStyle}>
-            Sider123132
-          </Sider>
-          <Content style={contentStyle}>
-            <Upload
-              showUploadList={false}
-              customRequest={async ({ file }) => {
-                try {
-                  await createPostAPI({
-                    content: "Up avatar mới",
-                    userId: 47,
-                    file: file as File,
-                  });
-                  message.success("Upload thành công!");
-                } catch {
-                  message.error("Upload thất bại!");
-                }
+        <Content style={contentStyle}>
+          <div style={{ maxWidth: 600, margin: "0 auto" }}>
+            <Card
+              style={{
+                borderRadius: 8,
+                marginBottom: 16,
+                boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
               }}
             >
-              <Button icon={<UploadOutlined />}>Up Avatar</Button>
-            </Upload>
-          </Content>
-          <Sider width="25%" style={siderStyle}>
-            <Button color="default" variant="text" onClick={openUploadModal}>
-              <img
-                src="https://static.xx.fbcdn.net/rsrc.php/v4/y7/r/Ivw7nhRtXyo.png?_nc_eui2=AeGMJq8u7sIW_CDU_bSE4VhykBVQC4m7dx6QFVALibt3HjppS8A3MyZJgA_G-pVfvu4bwgNQW9UDwtbBqxxIXLIQ"
-                alt=""
-              />
-              Ảnh/Video
-            </Button>
-          </Sider>
-        </Layout>
-      </Layout>
-
-      <ModalUpload
-        isOpen={isUploadModalOpen}
-        onClose={closeUploadModal}
-        onSuccess={handleReloadPosts}
-      />
-
-      <div className="facebook-post-list" style={{ width: "100%" }}>
-        {loading ? (
-          <Spin
-            size="large"
-            style={{ display: "block", margin: "40px auto" }}
-          />
-        ) : posts.length === 0 ? (
-          <Empty description="Không có bài viết nào" />
-        ) : (
-          posts.map((post) => (
-            <Card
-              key={post.id}
-              className="facebook-post"
-              style={{ marginBottom: 24 }}
-            >
-              {/*header  */}
-              <div className="facebook-post__header">
-                <Avatar
-                  className="facebook-post__avatar"
-                  src={post.user.avatar || undefined}
-                  style={{ background: "#87d068" }}
-                >
-                  {post.user.fullname?.[0] || "U"}
-                </Avatar>
-                <div className="facebook-post__header-info">
-                  <span className="facebook-post__name">
-                    {post.user.fullname}
-                  </span>
-                  <span className="facebook-post__date">
-                    {dayjs(post.createdAt).format("DD/MM/YYYY HH:mm")}
-                  </span>
-                </div>
-              </div>
-              <div className="facebook-post__content">
-                <p>{post.content}</p>
-                {post.imageUrl && (
-                  <img
-                    src={post.imageUrl}
-                    alt="Post content"
-                    style={{ maxWidth: "100%", borderRadius: 8, marginTop: 8 }}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: 12,
+                }}
+              >
+                <Link to="/">
+                  <Avatar
+                    size={40}
+                    src={
+                      user?.avatar ||
+                      "https://scontent.fsgn5-10.fna.fbcdn.net/v/t1.30497-1/453178253_471506465671661_2781666950760530985_n.png?stp=dst-png_s200x200&_nc_cat=110&ccb=1-7&_nc_sid=136b72&_nc_ohc=262Ge7eTFLwQ7kNvwF8PpTe&_nc_oc=AdlBMf4kbbKKgwkljQi9ZwvF1XWbT-H3hzjC8qM6c1SiS_9LBWZ0DrCLs-5PezUAQEtbFfI6fLYOFibxDh_i-mY4&_nc_zt=24&_nc_ht=scontent.fsgn5-10.fna&oh=00_AfQyMtxGUfKX2p2Tutp5reEau2n3TnF5A8Lz80vkHCdG6A&oe=68A1607A"
+                    }
                   />
-                )}
-                {post.videoUrl && (
-                  <video
-                    controls
-                    src={post.videoUrl}
-                    style={{ maxWidth: "100%", marginTop: 8 }}
-                  />
-                )}
-              </div>
-              {/*footer  */}
-              <div className="facebook-post__footer">
-                <div className="facebook-post__reactions">
-                  <span role="img" aria-label="haha">
-                    😂
-                  </span>{" "}
-                  15K
-                </div>
-                <div className="facebook-post__stats">
-                  <span>676 bình luận</span>
-                  <span> · </span>
-                  <span>200 lượt chia sẻ</span>
-                </div>
-                <div
-                  className="facebook-post__actions"
+                </Link>
+                <TextArea
+                  placeholder="Hùng ơi, bạn đang nghĩ gì thế?"
+                  autoSize={{ minRows: 2 }}
                   style={{
-                    borderTop: "1px solid #eee",
-                    marginTop: "50px",
-                    paddingTop: "8px",
+                    borderRadius: 20,
+                    marginLeft: 12,
+                    flex: 1,
+                    padding: "8px 12px",
+                    backgroundColor: "#f0f2f5",
+                    border: "none",
+                    cursor: "pointer",
                   }}
+                  onClick={openUploadModal}
+                  readOnly
+                />
+              </div>
+              <Divider style={{ margin: "12px 0" }} />
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <Button
+                  type="text"
+                  icon={
+                    <img
+                      src="https://static.xx.fbcdn.net/rsrc.php/v4/yr/r/c0dWho49-X3.png"
+                      alt=""
+                      style={{ width: 24, height: 24 }}
+                    />
+                  }
+                  onClick={openUploadModal}
                 >
-                  <button>
-                    <LikeOutlined />
-                  </button>
-
-                  <button>
-                    <CommentOutlined />
-                  </button>
-                  <button>
-                    <RollbackOutlined />
-                  </button>
-                </div>
+                  Video trực tiếp
+                </Button>
+                <Button
+                  type="text"
+                  icon={
+                    <img
+                      src="https://static.xx.fbcdn.net/rsrc.php/v4/y7/r/Ivw7nhRtXyo.png"
+                      alt=""
+                      style={{ width: 24, height: 24 }}
+                    />
+                  }
+                  onClick={openUploadModal}
+                >
+                  Ảnh/Video
+                </Button>
+                <Button
+                  type="text"
+                  icon={
+                    <img
+                      src="https://static.xx.fbcdn.net/rsrc.php/v4/yd/r/Y4mYLVOhTwq.png"
+                      alt=""
+                      style={{ width: 24, height: 24 }}
+                    />
+                  }
+                >
+                  Cảm xúc/hoạt động
+                </Button>
               </div>
             </Card>
-          ))
-        )}
-      </div>
+
+            <ModalUpload
+              isOpen={isUploadModalOpen}
+              onClose={closeUploadModal}
+              onSuccess={handleReloadPosts}
+            />
+
+            <FacebookPostList posts={posts} loading={loading} />
+          </div>
+        </Content>
+      </Layout>
     </div>
   );
 };
