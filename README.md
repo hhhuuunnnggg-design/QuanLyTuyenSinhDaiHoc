@@ -83,8 +83,6 @@ npm run dev
 - email:admin@gmail.com
 - password:123456
 
-cd front_end/01-react-vite-starter
-
 # 🌐API mẫu (Swagger)
 
 - Truy cập tài liệu Swagger UI tại:
