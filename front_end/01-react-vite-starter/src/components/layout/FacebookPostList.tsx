@@ -10,6 +10,7 @@ import { Avatar, Button, Card, Empty, Input, Modal, Spin, message } from "antd";
 import dayjs from "dayjs";
 import React, { useState } from "react";
 import { FaEllipsisH } from "react-icons/fa";
+import { FaEarthAmericas } from "react-icons/fa6";
 import { useCurrentApp } from "../context/app.context";
 import "./FacebookPostList.scss";
 
@@ -119,7 +120,8 @@ const FacebookPostList: React.FC<FacebookPostListProps> = ({
                 <h4 className="post-name">{post.user.fullname}</h4>
                 <div className="post-meta">
                   <span className="post-date">
-                    {dayjs(post.createdAt).format("DD/MM/YYYY HH:mm")} ·{" "}
+                    {dayjs(post.createdAt).format("DD/MM/YYYY HH:mm")}{" "}
+                    <FaEarthAmericas />
                   </span>
                 </div>
               </div>
@@ -235,19 +237,6 @@ const FacebookPostList: React.FC<FacebookPostListProps> = ({
                   <span style={{ color: "#888" }}>
                     {dayjs(comment.createdAt).format("DD/MM/YYYY HH:mm")}
                   </span>
-
-                  {/* <Button
-                    title="Sửa"
-                    type="text"
-                    icon={<EditOutlined />}
-                    className="action-button"
-                  ></Button>
-                  <Button
-                    title="Xóa"
-                    type="text"
-                    icon={<DeleteOutlined />}
-                    className="action-button"
-                  ></Button> */}
                 </div>
               </div>
             ))
