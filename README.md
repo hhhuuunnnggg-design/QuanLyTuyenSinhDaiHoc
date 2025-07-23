@@ -58,8 +58,9 @@ cd backend
 ./mvnw spring-boot:run
 ```
 
-### ✅ 1. Chạy Frontend
+### ✅ 2. Chạy Frontend
 
+```bash
 # Di chuyển vào thư mục frontend
 
 cd front_end/01-react-vite-starter
@@ -71,6 +72,7 @@ npm install
 # Chạy Vite dev server
 
 npm run dev
+```
 
 # 🔑 Tài khoản mẫu
 
