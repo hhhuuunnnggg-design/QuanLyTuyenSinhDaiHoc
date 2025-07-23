@@ -98,7 +98,7 @@ const AppCenter = ({ className }: { className?: string }) => {
                   />
                 </Link>
                 <TextArea
-                  placeholder="Hùng ơi, bạn đang nghĩ gì thế?"
+                  placeholder="Hùng ơi, bạn đang nghĩ gì thế.?"
                   autoSize={{ minRows: 2 }}
                   style={{
                     borderRadius: 20,
