@@ -10,10 +10,12 @@ import {
 import {
   AccountBookTwoTone,
   ApiTwoTone,
+  CloseOutlined,
   CloudTwoTone,
   MessageTwoTone,
   NotificationTwoTone,
   OpenAIFilled,
+  UnorderedListOutlined,
   VideoCameraTwoTone,
 } from "@ant-design/icons";
 import {
@@ -30,33 +32,7 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import "./app.header.scss";
-
-const fakeUserA = {
-  id: 1,
-  fullname: "Nguyễn Văn A",
-  avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-};
-const fakeUserB = {
-  id: 2,
-  fullname: "Trần Thị B",
-  avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-};
-
-const fakeMessages = [
-  { id: 1, sender: fakeUserA, content: "Chào bạn!", time: "10:00" },
-  {
-    id: 2,
-    sender: fakeUserB,
-    content: "Chào bạn, bạn khỏe không?",
-    time: "10:01",
-  },
-  {
-    id: 3,
-    sender: fakeUserA,
-    content: "Mình khỏe, cảm ơn bạn!",
-    time: "10:02",
-  },
-];
+import imge_bot from "./img_left/ai_bot.png";
 
 export function ChatBox({ onClose }: { onClose: () => void }) {
   const { user } = useCurrentApp();
@@ -80,9 +56,7 @@ export function ChatBox({ onClose }: { onClose: () => void }) {
           sender: {
             id: msg.isBot ? 0 : user.id,
             fullname: msg.isBot ? "Chatbot" : user.fullname,
-            avatar: msg.isBot
-              ? "https://cdn-icons-png.flaticon.com/512/4712/4712037.png"
-              : user.avatar,
+            avatar: msg.isBot ? imge_bot : user.avatar,
           },
           content: msg.content,
           time:
@@ -129,7 +103,7 @@ export function ChatBox({ onClose }: { onClose: () => void }) {
             sender: {
               id: 0,
               fullname: "Chatbot",
-              avatar: "https://cdn-icons-png.flaticon.com/512/4712/4712037.png",
+              avatar: { imge_bot },
             },
             content: botMsg.content || "Bot đã trả lời.",
             time: new Date().toLocaleTimeString().slice(0, 5),
@@ -182,14 +156,25 @@ export function ChatBox({ onClose }: { onClose: () => void }) {
             Chatbot AI
           </span>
         </div>
-        <Button
-          type="text"
-          size="small"
-          onClick={onClose}
-          style={{ padding: "4px" }}
-        >
-          ✕
-        </Button>
+        <div>
+          <Button
+            type="text"
+            size="small"
+            onClick={onClose}
+            style={{ padding: "4px" }}
+          >
+            <UnorderedListOutlined />
+          </Button>
+
+          <Button
+            type="text"
+            size="small"
+            onClick={onClose}
+            style={{ padding: "4px" }}
+          >
+            <CloseOutlined />
+          </Button>
+        </div>
       </div>
 
       {/* Messages */}
