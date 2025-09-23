@@ -1,6 +1,6 @@
-# 💻 Clone Facebook 2025
+# Trung Tâm Anh Ngữ
 
-Dự án mô phỏng một mạng xã hội kiểu Facebook với các tính năng hiện đại như:
+Dự án mô phỏng Clone lại Các Website trung tâm tiếng anh
 
 - 🔐 Đăng nhập / Đăng ký (JWT + Spring Security)
 - 🚫 Chặn truy cập trái phép & redirect về trang đăng nhập
