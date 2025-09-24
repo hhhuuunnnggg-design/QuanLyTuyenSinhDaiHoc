@@ -5,7 +5,7 @@ import { Provider, useDispatch } from "react-redux";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import Layout from "./layout";
-import AboutPage from "./pages/client/about";
+
 import LoginPage from "./pages/client/auth/login";
 import RegisterPage from "./pages/client/auth/register";
 import BookPage from "./pages/client/book";
@@ -21,7 +21,7 @@ import AppLeft from "./components/layout/app.left";
 import AppRight from "./components/layout/app.right";
 // import PermissionPage from "./pages/admin/permission";
 import PermissionPage from "./components/admin/Permission/PermissionTable";
-import PostPage from "./pages/admin/post";
+
 // import RolePage from "./pages/admin/role";
 import RolePage from "./components/admin/Role/RoleTable";
 
@@ -48,10 +48,6 @@ const router = createBrowserRouter([
         path: "/book",
         element: <BookPage />,
       },
-      {
-        path: "/about",
-        element: <AboutPage />,
-      },
     ],
   },
   {
@@ -73,10 +69,6 @@ const router = createBrowserRouter([
       {
         path: "permission",
         element: <PermissionPage />,
-      },
-      {
-        path: "post",
-        element: <PostPage />,
       },
     ],
   },
