@@ -60,7 +60,7 @@ public class DatabaseInitializer implements CommandLineRunner {
             arr.add(createPermission("Cập nhật người dùng", "/api/v1/users/{id}", "PUT", "USERS"));
             arr.add(createPermission("thay đổi trạng thái người dùng", "/api/v1/users/changeActivity/{id}", "PUT",
                     "USERS"));
-            // User permissions
+
             // Permissions
             arr.add(createPermission("Tạo quyền mới", "/api/v1/permissions", "POST", "PERMISSIONS"));
             arr.add(createPermission("Cập nhật quyền", "/api/v1/permissions/{id}", "PUT", "PERMISSIONS"));
@@ -74,16 +74,6 @@ public class DatabaseInitializer implements CommandLineRunner {
             arr.add(createPermission("Xóa vai trò", "/api/v1/roles/{id}", "DELETE", "ROLES"));
             arr.add(createPermission("Xem vai trò", "/api/v1/roles/{id}", "GET", "ROLES"));
             arr.add(createPermission("Xem danh sách vai trò", "/api/v1/roles/fetch-all", "GET", "ROLES"));
-
-            // Posts
-            // arr.add(createPermission("Tạo bài viết", "/api/v1/posts/create", "POST",
-            // "POSTS"));
-            arr.add(createPermission("Xóa bài viết", "/api/v1/posts/{id}", "DELETE", "POSTS"));
-            // arr.add(createPermission("Cập nhật bài viết", "/api/v1/posts/{id}", "PUT",
-            // "POSTS"));
-            // arr.add(createPermission("Xem bài viết", "/api/v1/posts/{id}", "GET",
-            // "POSTS"));
-            arr.add(createPermission("Xem danh sách bài viết", "/api/v1/posts/fetch-all", "GET", "POSTS"));
 
             this.permissionRepository.saveAll(arr);
         }
@@ -108,6 +98,7 @@ public class DatabaseInitializer implements CommandLineRunner {
             adminUser.setGender(genderEnum.MALE);
             adminUser.setPassword(this.passwordEncoder.encode("123456"));
             adminUser.setIs_admin(true);
+            // adminUser.getRole().setId(1L);
 
             // Tìm role SUPER_ADMIN bằng cách khác
             List<Role> roles = this.roleRepository.findAll();
