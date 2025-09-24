@@ -24,7 +24,8 @@ import PermissionPage from "./components/admin/Permission/PermissionTable";
 import PostPage from "./pages/admin/post";
 // import RolePage from "./pages/admin/role";
 import RolePage from "./components/admin/Role/RoleTable";
-import UsersPage from "./pages/admin/users";
+
+import UsersPage from "./components/admin/User/UserTable";
 import { fetchAccountThunk } from "./redux/slice/auth.slice";
 import "./styles/global.scss";
 
