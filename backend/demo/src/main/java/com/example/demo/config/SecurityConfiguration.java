@@ -6,7 +6,6 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -49,7 +48,8 @@ public class SecurityConfiguration {
                 "/api/v1/email/**",
                 "/v3/api-docs/**",
                 "/swagger-ui/**",
-                "/swagger-ui.html"
+                "/swagger-ui.html",
+                "/api/v1/auth/**"
         };
         http
                 // 1. Tắt CSRF (Cross-Site Request Forgery) protection
@@ -62,7 +62,6 @@ public class SecurityConfiguration {
                                 .requestMatchers(whiteList).permitAll()
                                 // 3.1 Cho phép truy cập không cần xác thực cho trang chủ ("/") và trang đăng
                                 // nhập ("/login")
-                                .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll() // cho phép public
 
                                 // 3.2 Các request còn lại yêu cầu phải được xác thực
                                 // .anyRequest().authenticated()
