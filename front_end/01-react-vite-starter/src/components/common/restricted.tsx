@@ -5,7 +5,7 @@ interface RestrictedProps {
   method?: string;
   children: React.ReactNode;
 }
-
+// cái này dùng để ẩn các api mà user(admin) không có quyền truy cập
 const Restricted: React.FC<RestrictedProps> = ({
   permission,
   method,

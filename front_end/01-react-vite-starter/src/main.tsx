@@ -26,6 +26,7 @@ import PermissionPage from "./components/admin/Permission/PermissionTable";
 import RolePage from "./components/admin/Role/RoleTable";
 
 import UsersPage from "./components/admin/User/UserTable";
+import ErrorPage from "./components/common/ErrorPageRoute";
 import { fetchAccountThunk } from "./redux/slice/auth.slice";
 import "./styles/global.scss";
 
@@ -33,6 +34,7 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
+    errorElement: <ErrorPage />,
     children: [
       {
         index: true,
@@ -57,6 +59,7 @@ const router = createBrowserRouter([
         <LayoutAdmin />
       </AdminRoute>
     ),
+    errorElement: <ErrorPage />,
     children: [
       {
         path: "user",
@@ -75,10 +78,16 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginPage />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "/register",
     element: <RegisterPage />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "*",
+    element: <ErrorPage />,
   },
 ]);
 

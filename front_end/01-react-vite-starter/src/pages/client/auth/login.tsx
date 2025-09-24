@@ -69,8 +69,8 @@ const LoginPage = () => {
           <section className="wrapper">
             <div className="heading" style={{ textAlign: "center" }}>
               <img
-                style={{ width: "50px", height: "50px" }}
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Logo_%282019%29.png/1024px-Facebook_Logo_%282019%29.png"
+                style={{ width: "150px", height: "150px" }}
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTLKVxAZXs4BY3vho4tvQUv7o5GyTRBGXQ3Ig&s"
                 alt=""
               />
               <h2 className="text text-large">Đăng Nhập</h2>
