@@ -1,5 +1,6 @@
 package com.example.demo.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -12,9 +13,11 @@ import org.springframework.stereotype.Service;
 import com.example.demo.domain.Permission;
 import com.example.demo.domain.Role;
 import com.example.demo.domain.dto.ResultPaginationDTO;
+import com.example.demo.domain.request.Role.UpsertRole;
 import com.example.demo.repository.PermissionRepository;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.service.RoleService;
+import com.example.demo.util.error.IdInvalidException;
 
 @Service
 public class RoleServiceImpl implements RoleService {
@@ -46,6 +49,44 @@ public class RoleServiceImpl implements RoleService {
         }
 
         return this.roleRepository.save(r);
+    }
+
+    @Override
+    public Role createFromDTO(UpsertRole dto) throws IdInvalidException {
+        // check name
+        if (this.existByName(dto.getName())) {
+            throw new IdInvalidException("Role với name = " + dto.getName() + " đã tồn tại");
+        }
+
+        // Map từ DTO sang Entity
+        Role newRole = new Role();
+        newRole.setName(dto.getName());
+        newRole.setDescription(dto.getDescription());
+        newRole.setActive(dto.isActive());
+
+        // Map permissions từ DTO sang Entity
+        if (dto.getPermissions() != null && !dto.getPermissions().isEmpty()) {
+            List<Permission> dbPermissions = new ArrayList<>();
+            for (UpsertRole.Permission permissionDTO : dto.getPermissions()) {
+                Permission permission = this.permissionRepository
+                        .findByModuleAndApiPathAndMethod(
+                                permissionDTO.getModule(),
+                                permissionDTO.getApiPath(),
+                                permissionDTO.getMethod())
+                        .orElse(null);
+
+                if (permission == null) {
+                    throw new IdInvalidException(
+                            "Permission với module=" + permissionDTO.getModule() +
+                                    ", apiPath=" + permissionDTO.getApiPath() +
+                                    ", method=" + permissionDTO.getMethod() + " không tồn tại");
+                }
+                dbPermissions.add(permission);
+            }
+            newRole.setPermissions(dbPermissions);
+        }
+
+        return this.roleRepository.save(newRole);
     }
 
     @Override
@@ -81,7 +122,54 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public void delete(long id) {
+    public Role updateRoleFromDTO(long id, UpsertRole dto) throws IdInvalidException {
+        // check exist by id
+        Role existingRole = this.fetchById(id);
+        if (existingRole == null) {
+            throw new IdInvalidException("Role với id = " + id + " không tồn tại");
+        }
+
+        // check name (chỉ check nếu có thay đổi)
+        if (!existingRole.getName().equals(dto.getName()) && this.existByName(dto.getName())) {
+            throw new IdInvalidException("Role với name = " + dto.getName() + " đã tồn tại");
+        }
+
+        // Map từ DTO sang Entity
+        existingRole.setName(dto.getName());
+        existingRole.setDescription(dto.getDescription());
+        existingRole.setActive(dto.isActive());
+
+        // Map permissions từ DTO sang Entity
+        if (dto.getPermissions() != null) {
+            List<Permission> dbPermissions = new ArrayList<>();
+            for (UpsertRole.Permission permissionDTO : dto.getPermissions()) {
+                Permission permission = this.permissionRepository
+                        .findByModuleAndApiPathAndMethod(
+                                permissionDTO.getModule(),
+                                permissionDTO.getApiPath(),
+                                permissionDTO.getMethod())
+                        .orElse(null);
+
+                if (permission == null) {
+                    throw new IdInvalidException(
+                            "Permission với module=" + permissionDTO.getModule() +
+                                    ", apiPath=" + permissionDTO.getApiPath() +
+                                    ", method=" + permissionDTO.getMethod() + " không tồn tại");
+                }
+                dbPermissions.add(permission);
+            }
+            existingRole.setPermissions(dbPermissions);
+        }
+
+        return this.roleRepository.save(existingRole);
+    }
+
+    @Override
+    public void delete(long id) throws IdInvalidException {
+        Role existingRole = this.fetchById(id);
+        if (existingRole == null) {
+            throw new IdInvalidException("Role với id = " + id + " không tồn tại");
+        }
         this.roleRepository.deleteById(id);
     }
 

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.domain.Role;
 import com.example.demo.domain.dto.ResultPaginationDTO;
+import com.example.demo.domain.request.Role.UpsertRole;
 import com.example.demo.service.RoleService;
 import com.example.demo.util.annotation.ApiMessage;
 import com.example.demo.util.error.IdInvalidException;
@@ -39,34 +40,22 @@ public class RoleController {
 
     @PostMapping("/create")
     @ApiMessage("Create a role")
-    public ResponseEntity<Role> create(@Valid @RequestBody Role r) throws IdInvalidException {
-        // check name
-        if (this.roleService.existByName(r.getName())) {
-            throw new IdInvalidException("Role với name = " + r.getName() + " đã tồn tại");
-        }
-        return ResponseEntity.status(HttpStatus.CREATED).body(this.roleService.create(r));
+    public ResponseEntity<Role> create(@Valid @RequestBody UpsertRole upsertRole) throws IdInvalidException {
+        Role createdRole = this.roleService.createFromDTO(upsertRole);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdRole);
     }
 
     @PutMapping("/{id}")
     @ApiMessage("Update a role")
-    public ResponseEntity<Role> update(@Valid @PathVariable Long id, @RequestBody Role role) throws IdInvalidException {
-        // check id
-        role.setId(id);
-        Role roleUpdate = this.roleService.updateRole(role);
-        if (roleUpdate == null) {
-            throw new IdInvalidException("Role với id = " + role + " không tồn tại");
-        }
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(this.roleService.updateRole(role));
+    public ResponseEntity<Role> update(@Valid @PathVariable Long id, @RequestBody UpsertRole upsertRole)
+            throws IdInvalidException {
+        Role updatedRole = this.roleService.updateRoleFromDTO(id, upsertRole);
+        return ResponseEntity.ok().body(updatedRole);
     }
 
     @DeleteMapping("/{id}")
     @ApiMessage("Delete a role")
     public ResponseEntity<Map<String, String>> delete(@PathVariable("id") long id) throws IdInvalidException {
-        // check id
-        if (this.roleService.fetchById(id) == null) {
-            throw new IdInvalidException("Role với id = " + id + " không tồn tại");
-        }
         this.roleService.delete(id);
         Map<String, String> response = new HashMap<>();
         response.put("message", "Đã xóa thành công");

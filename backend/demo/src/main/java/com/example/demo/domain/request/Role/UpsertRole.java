@@ -1,6 +1,10 @@
 package com.example.demo.domain.request.Role;
 
+import java.util.List;
+
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
@@ -14,14 +18,18 @@ public class UpsertRole {
     @NotBlank(message = "Mô tả không được để trống")
     String description;
 
-    @NotBlank(message = "hoạt động được để trống")
+    @NotNull(message = "Trạng thái không được để trống")
     boolean active;
 
-    Permission permissions;
+    @Valid
+    List<Permission> permissions;
 
     @Data
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    class Permission {
+    public static class Permission {
+
+        Long id;
+
         @NotBlank(message = "Tên không được để trống")
         String name;
 
