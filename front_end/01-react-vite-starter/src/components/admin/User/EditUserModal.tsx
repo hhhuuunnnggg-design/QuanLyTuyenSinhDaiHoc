@@ -1,6 +1,13 @@
-import { updateUserAPI } from "@/services/api";
+import { adminUpdateUserAPI, fetchAllRolesAPI } from "@/services/api";
 import { Form, Input, message, Modal, Select } from "antd";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+
+interface IRole {
+  id: number;
+  name: string;
+  description: string;
+  active: boolean;
+}
 
 interface IUserData {
   id: number;
@@ -38,23 +45,52 @@ const EditUserModal = ({
   editingUser,
 }: EditUserModalProps) => {
   const [editForm] = Form.useForm();
+  const [roles, setRoles] = useState<IRole[]>([]);
+  const [loadingRoles, setLoadingRoles] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchRoles();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (editingUser && isOpen) {
       editForm.setFieldsValue({
         email: editingUser.email,
-        firstName: editingUser.fullname?.split(" ")[0] || "",
-        lastName: editingUser.fullname?.split(" ").slice(1).join(" ") || "",
-        gender: editingUser.gender,
+        roleId: editingUser.role?.id || undefined,
       });
     }
   }, [editingUser, isOpen, editForm]);
+
+  const fetchRoles = async () => {
+    setLoadingRoles(true);
+    try {
+      const response = await fetchAllRolesAPI();
+      const rolesData =
+        response.data?.data?.result || response.data?.result || [];
+      if (Array.isArray(rolesData)) {
+        // Chỉ lấy các role đang active
+        setRoles(rolesData.filter((role: IRole) => role.active));
+      }
+    } catch (error: any) {
+      console.error("Error fetching roles:", error);
+      message.error("Lỗi khi tải danh sách vai trò!");
+    } finally {
+      setLoadingRoles(false);
+    }
+  };
 
   const handleUpdateUser = async (values: any) => {
     if (!editingUser) return;
 
     try {
-      await updateUserAPI(editingUser.id, values);
+      const userData = {
+        email: values.email,
+        password: values.password || undefined,
+        roleId: values.roleId || undefined,
+      };
+      await adminUpdateUserAPI(editingUser.id, userData);
       message.success("Cập nhật người dùng thành công!");
       onClose();
       editForm.resetFields();
@@ -91,30 +127,30 @@ const EditUserModal = ({
         </Form.Item>
 
         <Form.Item
-          name="firstName"
-          label="Họ"
-          rules={[{ required: true, message: "Vui lòng nhập họ!" }]}
+          name="password"
+          label="Mật khẩu mới"
+          rules={[
+            { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự!" },
+          ]}
         >
-          <Input placeholder="Nhập họ..." />
+          <Input.Password placeholder="Nhập mật khẩu mới (để trống nếu không đổi)..." />
         </Form.Item>
 
         <Form.Item
-          name="lastName"
-          label="Tên"
-          rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
+          name="roleId"
+          label="Vai trò"
+          rules={[{ required: false }]}
         >
-          <Input placeholder="Nhập tên..." />
-        </Form.Item>
-
-        <Form.Item
-          name="gender"
-          label="Giới tính"
-          rules={[{ required: true, message: "Vui lòng chọn giới tính!" }]}
-        >
-          <Select placeholder="Chọn giới tính...">
-            <Select.Option value="MALE">Nam</Select.Option>
-            <Select.Option value="FEMALE">Nữ</Select.Option>
-            <Select.Option value="OTHER">Khác</Select.Option>
+          <Select
+            placeholder="Chọn vai trò (để trống để xóa vai trò)..."
+            allowClear
+            loading={loadingRoles}
+          >
+            {roles.map((role) => (
+              <Select.Option key={role.id} value={role.id}>
+                {role.name}
+              </Select.Option>
+            ))}
           </Select>
         </Form.Item>
       </Form>

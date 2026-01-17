@@ -8,10 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.domain.Role;
 import com.example.demo.domain.User;
+import com.example.demo.domain.request.User.UpsertAdminDTO;
+import com.example.demo.util.error.IdInvalidException;
 import com.example.demo.domain.dto.ResultPaginationDTO;
 import com.example.demo.domain.response.ResCreateUserDTO;
 import com.example.demo.domain.response.ResUpdateUserDTO;
@@ -33,6 +36,9 @@ public class UserServicesImpl implements UserServices {
 
     @Autowired
     RoleService roleService;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     @Override
     public User handleGetUserByUsernames(String username) {
@@ -250,5 +256,73 @@ public class UserServicesImpl implements UserServices {
         rs.setResult(listUser);
 
         return rs;
+    }
+
+    @Override
+    public User handleAdminCreateUser(UpsertAdminDTO dto) throws IdInvalidException {
+        // Check email exists
+        if (isEmailExist(dto.getEmail())) {
+            throw new IdInvalidException(
+                    "Email " + dto.getEmail() + " đã tồn tại, vui lòng sử dụng email khác.");
+        }
+
+        // Map DTO to User entity
+        User newUser = new User();
+        newUser.setEmail(dto.getEmail());
+        newUser.setPassword(passwordEncoder.encode(dto.getPassword()));
+
+        // Set role if provided
+        if (dto.getRoleId() != null) {
+            Role role = roleService.fetchById(dto.getRoleId());
+            if (role == null) {
+                throw new IdInvalidException("Role với id = " + dto.getRoleId() + " không tồn tại");
+            }
+            newUser.setRole(role);
+        }
+
+        return handleCreateUser(newUser);
+    }
+
+    @Override
+    public User handleAdminUpdateUser(Long id, UpsertAdminDTO dto) throws IdInvalidException {
+        User existingUser = handleFindByIdUser(id);
+        if (existingUser == null) {
+            throw new IdInvalidException("User với id = " + id + " không tồn tại");
+        }
+
+        // Check email exists (only if email changed)
+        if (!existingUser.getEmail().equals(dto.getEmail()) && isEmailExist(dto.getEmail())) {
+            throw new IdInvalidException(
+                    "Email " + dto.getEmail() + " đã tồn tại, vui lòng sử dụng email khác.");
+        }
+
+        // Update email
+        existingUser.setEmail(dto.getEmail());
+
+        // Update password if provided
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            existingUser.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
+
+        // Update role if provided
+        if (dto.getRoleId() != null) {
+            Role role = roleService.fetchById(dto.getRoleId());
+            if (role == null) {
+                throw new IdInvalidException("Role với id = " + dto.getRoleId() + " không tồn tại");
+            }
+            existingUser.setRole(role);
+        } else {
+            // If roleId is null, remove role
+            existingUser.setRole(null);
+        }
+
+        // Ensure id is set for handleUpdateUser
+        existingUser.setId(id);
+        User updatedUser = handleUpdateUser(existingUser);
+        if (updatedUser == null) {
+            throw new IdInvalidException("Cập nhật user thất bại");
+        }
+
+        return updatedUser;
     }
 }

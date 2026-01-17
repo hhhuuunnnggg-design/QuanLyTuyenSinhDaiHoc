@@ -5,9 +5,11 @@ import org.springframework.data.jpa.domain.Specification;
 
 import com.example.demo.domain.User;
 import com.example.demo.domain.dto.ResultPaginationDTO;
+import com.example.demo.domain.request.User.UpsertAdminDTO;
 import com.example.demo.domain.response.ResCreateUserDTO;
 import com.example.demo.domain.response.ResUpdateUserDTO;
 import com.example.demo.domain.response.ResUserDTO;
+import com.example.demo.util.error.IdInvalidException;
 
 public interface UserServices {
 
@@ -40,4 +42,8 @@ public interface UserServices {
     void handleSaveImg(User user);
 
     ResultPaginationDTO fetchAllUsers(Specification<User> spec, Pageable pageable);
+
+    User handleAdminCreateUser(UpsertAdminDTO dto) throws IdInvalidException;
+
+    User handleAdminUpdateUser(Long id, UpsertAdminDTO dto) throws IdInvalidException;
 }

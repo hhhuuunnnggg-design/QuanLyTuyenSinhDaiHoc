@@ -79,6 +79,35 @@ export const changeUserActivityAPI = (userId: number) => {
   return axios.put<IBackendRes<any>>(urlBackend);
 };
 
+// Admin create user API
+export const adminCreateUserAPI = (userData: {
+  email: string;
+  password: string;
+  roleId?: number;
+}) => {
+  const urlBackend = "/api/v1/users/admin/create";
+  return axios.post<IBackendRes<any>>(urlBackend, userData);
+};
+
+// Admin update user API
+export const adminUpdateUserAPI = (
+  userId: number,
+  userData: {
+    email: string;
+    password?: string;
+    roleId?: number;
+  }
+) => {
+  const urlBackend = `/api/v1/users/admin/${userId}`;
+  return axios.put<IBackendRes<any>>(urlBackend, userData);
+};
+
+// Fetch all roles API
+export const fetchAllRolesAPI = (params?: any) => {
+  const urlBackend = "/api/v1/roles/fetch-all";
+  return axios.get<IBackendRes<any>>(urlBackend, { params });
+};
+
 // Create role API
 export const createRoleAPI = (roleData: {
   name: string;

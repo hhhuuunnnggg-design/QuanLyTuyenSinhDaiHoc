@@ -28,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.domain.User;
 import com.example.demo.domain.dto.ResultPaginationDTO;
+import com.example.demo.domain.request.User.UpsertAdminDTO;
 import com.example.demo.domain.response.ResCreateUserDTO;
 import com.example.demo.domain.response.ResUpdateUserDTO;
 import com.example.demo.domain.response.ResUserDTO;
@@ -199,6 +200,26 @@ public class UserController {
 
         return ResponseEntity.status(HttpStatus.OK).body(
                 this.userService.fetchAllUsers(spec, pageable));
+    }
+
+    // Admin create user
+    @PostMapping("/admin/create")
+    @ApiMessage("Admin create a new user")
+    public ResponseEntity<ResCreateUserDTO> adminCreateUser(@Valid @RequestBody UpsertAdminDTO dto)
+            throws IdInvalidException {
+        User createdUser = userService.handleAdminCreateUser(dto);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(userService.convertToResCreateUserDTO(createdUser));
+    }
+
+    // Admin update user
+    @PutMapping("/admin/{id}")
+    @ApiMessage("Admin update a user")
+    public ResponseEntity<ResUpdateUserDTO> adminUpdateUser(
+            @PathVariable Long id,
+            @Valid @RequestBody UpsertAdminDTO dto) throws IdInvalidException {
+        User updatedUser = userService.handleAdminUpdateUser(id, dto);
+        return ResponseEntity.ok(userService.convertToResUpdateUserDTO(updatedUser));
     }
 
 }
