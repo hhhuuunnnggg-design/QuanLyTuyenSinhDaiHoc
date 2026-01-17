@@ -1,4 +1,4 @@
-import { createRoleAPI, fetchAllPermissionsAPI } from "@/services/api";
+import { createRoleAPI, fetchAllPermissionsAPI } from "@/api";
 import { Checkbox, Divider, Form, Input, message, Modal, Switch } from "antd";
 import { useEffect, useState } from "react";
 

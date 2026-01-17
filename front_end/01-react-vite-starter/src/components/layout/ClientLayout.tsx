@@ -1,8 +1,8 @@
 import { useCurrentApp } from "@/components/context/app.context";
 import { Outlet, useLocation } from "react-router-dom";
-import AppHeader from "./components/layout/app.header";
+import AppHeader from "./AppHeader";
 
-function Layout() {
+function ClientLayout() {
   const location = useLocation();
   const { user, isAuthenticated } = useCurrentApp();
 
@@ -29,4 +29,4 @@ function Layout() {
   );
 }
 
-export default Layout;
+export default ClientLayout;

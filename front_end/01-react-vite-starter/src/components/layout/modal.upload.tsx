@@ -1,5 +1,5 @@
+import { createPostAPI } from "@/api";
 import { useCurrentApp } from "@/components/context/app.context";
-import { createPostAPI } from "@/services/api";
 import {
   EnvironmentOutlined,
   PlusOutlined,

@@ -1,32 +1,32 @@
 //import ChatBox from "@/components/common/ChatBox";
+import { logoutAPI } from "@/api";
 import Restricted from "@/components/common/restricted";
 import { useCurrentApp } from "@/components/context/app.context";
 import { logout } from "@/redux/slice/auth.slice";
-import { logoutAPI } from "@/services/api";
 import {
-  AccountBookTwoTone,
-  ApiTwoTone,
-  CloudTwoTone,
-  MessageTwoTone,
-  NotificationTwoTone,
-  OpenAIFilled,
-  VideoCameraTwoTone,
+    AccountBookTwoTone,
+    ApiTwoTone,
+    CloudTwoTone,
+    MessageTwoTone,
+    NotificationTwoTone,
+    OpenAIFilled,
+    VideoCameraTwoTone,
 } from "@ant-design/icons";
 import {
-  Avatar,
-  Badge,
-  Button,
-  Divider,
-  Drawer,
-  Dropdown,
-  message,
-  Space,
+    Avatar,
+    Badge,
+    Button,
+    Divider,
+    Drawer,
+    Dropdown,
+    message,
+    Space,
 } from "antd";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import "./app.header.scss";
-import ModalChatbotAI from "./Modal.ChatbotAI";
+import "./AppHeader.scss";
+import ModalChatbotAI from "./ModalChatbotAI";
 
 const AppHeader = () => {
   const [openDrawer, setOpenDrawer] = useState(false);
@@ -102,9 +102,7 @@ const AppHeader = () => {
   ];
   const navIcons1 = [
     {
-      //<AccountBookTwoTone />
-      //<HomeTwoTone />
-      icon: <AccountBookTwoTone />, // thêm fontSize nếu cần
+      icon: <AccountBookTwoTone />,
       key: "home",
       onClick: () => navigate("/"),
     },
@@ -122,7 +120,7 @@ const AppHeader = () => {
       icon: <CloudTwoTone />,
       key: "feed",
       onClick: () => console.log("feed"),
-    }, // sửa key
+    },
   ];
 
   return (
@@ -151,7 +149,6 @@ const AppHeader = () => {
                 className="input-search"
                 type="text"
                 placeholder="Tìm kiếm trên Facebook"
-                // style={{ backgroundColor: "#f0f2f5" }}
               />
             </div>
             <div className="page-header__center">

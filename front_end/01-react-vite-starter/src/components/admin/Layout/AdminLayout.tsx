@@ -1,24 +1,25 @@
-import { logoutAPI } from "@/services/api";
+import { logoutAPI } from "@/api";
+import { useCurrentApp } from "@/components/context/app.context";
 import {
-  AppstoreOutlined,
-  DollarCircleOutlined,
-  ExceptionOutlined,
-  HeartTwoTone,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  TeamOutlined,
-  UserOutlined,
+    AppstoreOutlined,
+    DollarCircleOutlined,
+    ExceptionOutlined,
+    HeartTwoTone,
+    MenuFoldOutlined,
+    MenuUnfoldOutlined,
+    TeamOutlined,
+    UserOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Avatar, Dropdown, Layout, Menu, Space, message } from "antd";
 import React, { useEffect, useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import { useCurrentApp } from "../../context/app.context";
+
 type MenuItem = Required<MenuProps>["items"][number];
 
 const { Content, Footer, Sider } = Layout;
 
-const LayoutAdmin = () => {
+const AdminLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [activeMenu, setActiveMenu] = useState("dashboard");
   const { user, setUser, setIsAuthenticated, isAuthenticated } =
@@ -118,9 +119,6 @@ const LayoutAdmin = () => {
     return null;
   }
 
-  // Không cần kiểm tra role nữa vì đã được xử lý ở AdminRoute
-  // Chỉ render nếu đã đăng nhập
-
   return (
     <>
       <Layout style={{ minHeight: "100vh" }} className="layout-admin">
@@ -185,4 +183,4 @@ const LayoutAdmin = () => {
   );
 };
 
-export default LayoutAdmin;
+export default AdminLayout;

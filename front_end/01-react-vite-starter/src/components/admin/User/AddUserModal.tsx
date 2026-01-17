@@ -1,4 +1,4 @@
-import { adminCreateUserAPI, fetchAllRolesAPI } from "@/services/api";
+import { adminCreateUserAPI, fetchAllRolesAPI } from "@/api";
 import { Form, Input, message, Modal, Select } from "antd";
 import { useEffect, useState } from "react";
 

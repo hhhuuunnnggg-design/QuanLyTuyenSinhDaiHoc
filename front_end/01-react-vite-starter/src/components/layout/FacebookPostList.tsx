@@ -1,5 +1,5 @@
+import { createCommentAPI, fetchCommentsByPostAPI } from "@/api";
 import { useCommentSocket } from "@/hooks/useCommentSocket";
-import { createCommentAPI, fetchCommentsByPostAPI } from "@/services/api";
 import {
   CloseOutlined,
   CommentOutlined,

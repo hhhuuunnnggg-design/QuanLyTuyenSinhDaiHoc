@@ -1,4 +1,4 @@
-import { fetchAccountAPI } from "@/services/api";
+import { fetchAccountAPI } from "@/api";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 // 1. Định nghĩa state cho auth

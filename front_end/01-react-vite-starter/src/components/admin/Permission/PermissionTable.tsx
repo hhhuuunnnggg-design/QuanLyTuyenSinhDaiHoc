@@ -1,5 +1,5 @@
-import { deletePermissionAPI, fetchAllMethod } from "@/services/api";
-import axios from "@/services/axios.customize";
+import { deletePermissionAPI, fetchAllMethod } from "@/api";
+import axios from "@/api/axios";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import ProTable from "@ant-design/pro-table";
 import { Button, message, Popconfirm, Space } from "antd";

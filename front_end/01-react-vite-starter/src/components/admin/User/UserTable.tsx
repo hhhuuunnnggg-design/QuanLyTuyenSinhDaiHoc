@@ -1,7 +1,7 @@
+import { changeUserActivityAPI, deleteUserAPI } from "@/api";
+import axios from "@/api/axios";
 import Restricted from "@/components/common/restricted";
 import { useCurrentApp } from "@/components/context/app.context";
-import { changeUserActivityAPI, deleteUserAPI } from "@/services/api";
-import axios from "@/services/axios.customize";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import ProTable from "@ant-design/pro-table";
 import { Avatar, Button, Image, message, Popconfirm, Space, Tag } from "antd";

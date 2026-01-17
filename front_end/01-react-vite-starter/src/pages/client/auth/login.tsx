@@ -1,5 +1,5 @@
+import { loginAPI } from "@/api";
 import { setAuth } from "@/redux/slice/auth.slice";
-import { loginAPI } from "@/services/api";
 import { Button, Divider, Form, Input, message } from "antd";
 import { useState } from "react";
 import { useDispatch } from "react-redux";

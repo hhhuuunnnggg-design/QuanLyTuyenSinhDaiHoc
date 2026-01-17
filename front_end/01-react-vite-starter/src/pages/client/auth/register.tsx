@@ -1,16 +1,16 @@
 // import { loginAPI } from "@/services/api";
 //import { loginAPI } from "@/services/api";
-import { registerAPI } from "@/services/api";
+import { registerAPI } from "@/api";
 import type { FormProps } from "antd";
 import {
-    App,
-    Button,
-    DatePicker,
-    Divider,
-    Form,
-    Input,
-    Select,
-    Steps,
+  App,
+  Button,
+  DatePicker,
+  Divider,
+  Form,
+  Input,
+  Select,
+  Steps,
 } from "antd";
 import type { Dayjs } from "dayjs";
 import { useState } from "react";

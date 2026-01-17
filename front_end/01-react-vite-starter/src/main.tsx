@@ -4,17 +4,16 @@ import { createRoot } from "react-dom/client";
 import { Provider, useDispatch } from "react-redux";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import Layout from "./layout";
+import ClientLayout from "@/components/layout/ClientLayout";
 
 import LoginPage from "./pages/client/auth/login";
 import RegisterPage from "./pages/client/auth/register";
 import BookPage from "./pages/client/book";
-// import ProtectedRoute from "./components/common/protectedRoute";
 
+import AdminLayout from "@/components/admin/Layout/AdminLayout";
 import { AppProvider } from "@/components/context/app.context";
 import { App, ConfigProvider } from "antd";
 import viVN from "antd/locale/vi_VN";
-import LayoutAdmin from "./components/admin/Layout/layout.admin";
 import { AdminRoute } from "./components/common/protectedRoute";
 
 // import PermissionPage from "./pages/admin/permission";
@@ -23,18 +22,17 @@ import PermissionPage from "./components/admin/Permission/PermissionTable";
 // import RolePage from "./pages/admin/role";
 import RolePage from "./components/admin/Role/RoleTable";
 
+import { fetchAccountThunk } from "@/redux/slice/auth.slice";
 import UsersPage from "./components/admin/User/UserTable";
 import ErrorPage from "./components/common/ErrorPageRoute";
-import { fetchAccountThunk } from "./redux/slice/auth.slice";
 import "./styles/global.scss";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Layout />,
+    element: <ClientLayout />,
     errorElement: <ErrorPage />,
     children: [
-     
       {
         path: "/book",
         element: <BookPage />,
@@ -45,7 +43,7 @@ const router = createBrowserRouter([
     path: "/admin",
     element: (
       <AdminRoute>
-        <LayoutAdmin />
+        <AdminLayout />
       </AdminRoute>
     ),
     errorElement: <ErrorPage />,

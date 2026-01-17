@@ -1,4 +1,4 @@
-import { fetchChatbotHistoryAPI, sendChatbotMessageAPI } from "@/services/api";
+import { fetchChatbotHistoryAPI, sendChatbotMessageAPI } from "@/api";
 import { CloseOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import { Avatar, Button, message } from "antd";
 import { useEffect, useRef, useState } from "react";

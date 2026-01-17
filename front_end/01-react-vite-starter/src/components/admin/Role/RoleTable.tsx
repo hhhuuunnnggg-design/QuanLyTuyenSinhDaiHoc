@@ -1,6 +1,6 @@
+import { deleteRoleAPI } from "@/api";
+import axios from "@/api/axios";
 import Restricted from "@/components/common/restricted";
-import { deleteRoleAPI } from "@/services/api";
-import axios from "@/services/axios.customize";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import ProTable from "@ant-design/pro-table";
 import { Button, message, Popconfirm, Space } from "antd";

@@ -1,4 +1,4 @@
-import { fetchAllMethod, updatePermissionAPI } from "@/services/api";
+import { fetchAllMethod, updatePermissionAPI } from "@/api";
 import { Form, Input, message, Modal, Select } from "antd";
 import { useEffect, useState } from "react";
 
