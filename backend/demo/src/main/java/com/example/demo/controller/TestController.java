@@ -12,6 +12,7 @@ public class TestController {
 
     @GetMapping("/test-env")
     public String test() {
+
         return dbUrl;
     }
 }

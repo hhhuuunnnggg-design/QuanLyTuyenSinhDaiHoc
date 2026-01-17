@@ -23,9 +23,11 @@ public class DemoApplication {
 					String dir = envFile.getParent() != null ? envFile.getParent() : ".";
 					dotenv = Dotenv.configure().directory(dir).filename(envFile.getName()).load();
 					if (dotenv.get("DB_URL") != null) {
+						System.out.println("day chinh la doten1 : " + dotenv.get("DB_URL"));
 						break;
 					}
 				} catch (Exception e) {
+					System.out.println("code dell vao day");
 					continue;
 				}
 			}
@@ -33,6 +35,7 @@ public class DemoApplication {
 
 		// Set biến môi trường vào System properties (ghi đè nếu đã có)
 		if (dotenv != null && dotenv.get("DB_URL") != null) {
+			System.out.println("day chinh la doten: " + dotenv.get("DB_URL"));
 			dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
 		}
 
