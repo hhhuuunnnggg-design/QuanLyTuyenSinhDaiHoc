@@ -55,24 +55,24 @@ public class DatabaseInitializer implements CommandLineRunner {
 
             // Users permissions
             arr.add(createPermission("Xem tất cả danh sách người dùng", "/api/v1/users/fetch-all", "GET", "USERS"));
-            arr.add(createPermission("Tạo người dùng", "/api/v1/users/add-user", "POST", "USERS"));
             arr.add(createPermission("Xóa người dùng", "/api/v1/users/{id}", "DELETE", "USERS"));
-            arr.add(createPermission("Cập nhật người dùng", "/api/v1/users/{id}", "PUT", "USERS"));
             arr.add(createPermission("thay đổi trạng thái người dùng", "/api/v1/users/changeActivity/{id}", "PUT",
                     "USERS"));
+            arr.add(createPermission("Upload avatar", "/api/v1/users/avatar", "POST", "USERS"));
+            arr.add(createPermission("Upload cover photo", "/api/v1/users/coverPhoto", "POST", "USERS"));
+            arr.add(createPermission("Admin tạo người dùng", "/api/v1/users/admin/create", "POST", "USERS"));
+            arr.add(createPermission("Admin cập nhật người dùng", "/api/v1/users/admin/{id}", "PUT", "USERS"));
 
             // Permissions
-            arr.add(createPermission("Tạo quyền mới", "/api/v1/permissions", "POST", "PERMISSIONS"));
+            arr.add(createPermission("Tạo quyền mới", "/api/v1/permissions/create", "POST", "PERMISSIONS"));
             arr.add(createPermission("Cập nhật quyền", "/api/v1/permissions/{id}", "PUT", "PERMISSIONS"));
             arr.add(createPermission("Xóa quyền", "/api/v1/permissions/{id}", "DELETE", "PERMISSIONS"));
-            arr.add(createPermission("Xem quyền", "/api/v1/permissions/{id}", "GET", "PERMISSIONS"));
             arr.add(createPermission("Xem danh sách quyền", "/api/v1/permissions/fetch-all", "GET", "PERMISSIONS"));
 
             // Roles
             arr.add(createPermission("Tạo vai trò mới", "/api/v1/roles/create", "POST", "ROLES"));
             arr.add(createPermission("Cập nhật vai trò", "/api/v1/roles/{id}", "PUT", "ROLES"));
             arr.add(createPermission("Xóa vai trò", "/api/v1/roles/{id}", "DELETE", "ROLES"));
-            arr.add(createPermission("Xem vai trò", "/api/v1/roles/{id}", "GET", "ROLES"));
             arr.add(createPermission("Xem danh sách vai trò", "/api/v1/roles/fetch-all", "GET", "ROLES"));
 
             this.permissionRepository.saveAll(arr);

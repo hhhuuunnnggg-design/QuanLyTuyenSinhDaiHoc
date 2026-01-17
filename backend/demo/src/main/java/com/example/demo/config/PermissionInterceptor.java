@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.HandlerMapping;
 
@@ -22,6 +23,8 @@ public class PermissionInterceptor implements HandlerInterceptor {
     @Autowired
     private UserServices userService;
 
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
+
     @Override
     @Transactional
     public boolean preHandle(
@@ -29,13 +32,13 @@ public class PermissionInterceptor implements HandlerInterceptor {
             HttpServletResponse response,
             Object handler) throws Exception {
 
-        String path = (String) request.getAttribute(
+        String pathPattern = (String) request.getAttribute(
                 HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
         String requestURI = request.getRequestURI();
         String httpMethod = request.getMethod();
 
         System.out.println(">>> RUN preHandle");
-        System.out.println(">>> path = " + path);
+        System.out.println(">>> pathPattern = " + pathPattern);
         System.out.println(">>> httpMethod = " + httpMethod);
         System.out.println(">>> requestURI = " + requestURI);
 
@@ -61,13 +64,32 @@ public class PermissionInterceptor implements HandlerInterceptor {
 
         List<Permission> permissions = role.getPermissions();
 
+        // So sánh path pattern với permission, hỗ trợ pattern matching
         boolean isAllow = permissions.stream()
-                .anyMatch(permission -> permission.getApiPath().equals(path)
-                        && permission.getMethod().equals(httpMethod));
+                .anyMatch(permission -> {
+                    String permissionPath = permission.getApiPath();
+                    String permissionMethod = permission.getMethod();
+
+                    // So sánh method trước
+                    if (!permissionMethod.equalsIgnoreCase(httpMethod)) {
+                        return false;
+                    }
+
+                    // Nếu path pattern từ HandlerMapping có sẵn, so sánh trực tiếp
+                    if (pathPattern != null) {
+                        return permissionPath.equals(pathPattern);
+                    }
+
+                    // Nếu path pattern null, cần match requestURI với permission pattern
+                    // Convert pattern {id} sang * để dùng với AntPathMatcher
+                    String antPattern = permissionPath.replaceAll("\\{[^}]+\\}", "*");
+                    return pathMatcher.match(antPattern, requestURI);
+                });
 
         if (!isAllow) {
             throw new PermissionException(
-                    "Bạn không có quyền truy cập endpoint này.");
+                    "Bạn không có quyền truy cập endpoint này. PathPattern: " + pathPattern + ", URI: " + requestURI
+                            + ", Method: " + httpMethod);
         }
 
         return true;
