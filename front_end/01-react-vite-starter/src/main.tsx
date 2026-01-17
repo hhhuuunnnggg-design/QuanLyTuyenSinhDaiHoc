@@ -16,9 +16,7 @@ import { App, ConfigProvider } from "antd";
 import viVN from "antd/locale/vi_VN";
 import LayoutAdmin from "./components/admin/Layout/layout.admin";
 import { AdminRoute } from "./components/common/protectedRoute";
-import AppCenter from "./components/layout/app.center";
-import AppLeft from "./components/layout/app.left";
-import AppRight from "./components/layout/app.right";
+
 // import PermissionPage from "./pages/admin/permission";
 import PermissionPage from "./components/admin/Permission/PermissionTable";
 
@@ -36,16 +34,7 @@ const router = createBrowserRouter([
     element: <Layout />,
     errorElement: <ErrorPage />,
     children: [
-      {
-        index: true,
-        element: (
-          <div className="main-layout-flex">
-            <AppLeft className="app-left" />
-            <AppCenter className="app-center" />
-            <AppRight className="app-right" />
-          </div>
-        ),
-      },
+     
       {
         path: "/book",
         element: <BookPage />,
