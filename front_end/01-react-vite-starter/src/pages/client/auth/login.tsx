@@ -52,11 +52,11 @@ const LoginPage = () => {
           navigate("/");
         }
       } else {
-        message.error(res.mesage);
+        message.error(res.message);
       }
     } catch (error: any) {
       console.error("Login error:", error);
-      message.error(error.mesage || "Đăng nhập thất bại!");
+      message.error(error.message || "Đăng nhập thất bại!");
     } finally {
       setIsSubmit(false);
     }

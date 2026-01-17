@@ -9,7 +9,7 @@ import lombok.experimental.FieldDefaults;
 public class RestResponse<T> {
      int statusCode;
      String error;
-    // mesage có thể là String hoặc Arraylisst
-     Object mesage;
+     // message có thể là String hoặc Arraylisst
+     Object message;
      T data;
 }

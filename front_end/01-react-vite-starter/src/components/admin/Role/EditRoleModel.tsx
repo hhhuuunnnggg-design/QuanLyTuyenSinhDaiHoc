@@ -81,11 +81,12 @@ const EditRoleModal = ({
       const roleData = {
         name: values.name,
         description: values.description,
-        active: values.active,
-        permissions: values.permissions?.map((id: number) => ({ id })) || [],
+        active: values.active ?? true,
+        permissionIds: values.permissions || [],
       };
       await updateRoleAPI(editingRole.id, roleData);
       message.success("Cập nhật vai trò thành công!");
+ 
       onCancel();
       form.resetFields();
       onSuccess();

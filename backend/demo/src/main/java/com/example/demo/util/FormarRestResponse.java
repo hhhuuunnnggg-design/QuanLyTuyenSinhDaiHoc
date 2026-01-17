@@ -1,18 +1,18 @@
 package com.example.demo.util;
 
-
-import com.example.demo.domain.response.RestResponse;
-import com.example.demo.util.annotation.ApiMessage;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
-import org.springframework.core.io.Resource;
-import jakarta.servlet.http.HttpServletResponse;
 
+import com.example.demo.domain.response.RestResponse;
+import com.example.demo.util.annotation.ApiMessage;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @ControllerAdvice
 public class FormarRestResponse implements ResponseBodyAdvice {
@@ -51,7 +51,7 @@ public class FormarRestResponse implements ResponseBodyAdvice {
         } else {
             res.setData(body);
             ApiMessage message = returnType.getMethodAnnotation(ApiMessage.class);
-            res.setMesage(message != null ? message.value() : "CALL API SUCCESS");
+            res.setMessage(message != null ? message.value() : "CALL API SUCCESS");
         }
 
         return res;

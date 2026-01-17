@@ -84,7 +84,7 @@ export const createRoleAPI = (roleData: {
   name: string;
   description: string;
   active: boolean;
-  permissions: { id: number }[];
+  permissionIds: number[];
 }) => {
   const urlBackend = "/api/v1/roles/create";
   return axios.post<IBackendRes<any>>(urlBackend, roleData);
@@ -97,7 +97,7 @@ export const updateRoleAPI = (
     name: string;
     description: string;
     active: boolean;
-    permissions: { id: number }[];
+    permissionIds: number[];
   }
 ) => {
   const urlBackend = `/api/v1/roles/${roleId}`;

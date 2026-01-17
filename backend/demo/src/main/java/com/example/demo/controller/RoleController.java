@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.domain.Role;
 import com.example.demo.domain.dto.ResultPaginationDTO;
-import com.example.demo.domain.request.Role.UpsertRole;
+import com.example.demo.domain.request.Role.UpsertRoleDTO;
 import com.example.demo.service.RoleService;
 import com.example.demo.util.annotation.ApiMessage;
 import com.example.demo.util.error.IdInvalidException;
@@ -40,14 +40,14 @@ public class RoleController {
 
     @PostMapping("/create")
     @ApiMessage("Create a role")
-    public ResponseEntity<Role> create(@Valid @RequestBody UpsertRole upsertRole) throws IdInvalidException {
-        Role createdRole = this.roleService.createFromDTO(upsertRole);
+    public ResponseEntity<Role> create(@Valid @RequestBody UpsertRoleDTO createRoleDTO) throws IdInvalidException {
+        Role createdRole = this.roleService.createFromDTO(createRoleDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRole);
     }
 
     @PutMapping("/{id}")
     @ApiMessage("Update a role")
-    public ResponseEntity<Role> update(@Valid @PathVariable Long id, @RequestBody UpsertRole upsertRole)
+    public ResponseEntity<Role> update(@Valid @PathVariable Long id, @RequestBody UpsertRoleDTO upsertRole)
             throws IdInvalidException {
         Role updatedRole = this.roleService.updateRoleFromDTO(id, upsertRole);
         return ResponseEntity.ok().body(updatedRole);

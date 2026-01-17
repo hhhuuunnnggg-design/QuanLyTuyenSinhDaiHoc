@@ -1,10 +1,10 @@
-export {};
+export { };
 
 declare global {
   // Backend response structure
   interface IBackendRes<T> {
     error?: string | string[];
-    mesage: string;
+    message: string;
     statusCode: number | string;
     data?: T;
   }

@@ -3,14 +3,14 @@
 import { registerAPI } from "@/services/api";
 import type { FormProps } from "antd";
 import {
-  App,
-  Button,
-  DatePicker,
-  Divider,
-  Form,
-  Input,
-  Select,
-  Steps,
+    App,
+    Button,
+    DatePicker,
+    Divider,
+    Form,
+    Input,
+    Select,
+    Steps,
 } from "antd";
 import type { Dayjs } from "dayjs";
 import { useState } from "react";
@@ -73,7 +73,7 @@ const RegisterPage = () => {
     } else {
       //error
       console.log(">>> Register error: ", res);
-      message.error(res.mesage);
+      message.error(res.message);
     }
     console.log(">>> Register response: ", res);
 

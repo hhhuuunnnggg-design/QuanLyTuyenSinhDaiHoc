@@ -32,7 +32,7 @@ export const fetchAccountThunk = createAsyncThunk(
       return rejectWithValue("Không nhận được dữ liệu!"); // ❌ action.rejected
     } catch (error: any) {
       return rejectWithValue(
-        error.mesage || "Lấy thông tin tài khoản thất bại!" // ❌ action.rejected
+        error.message || "Lấy thông tin tài khoản thất bại!" // ❌ action.rejected
       );
     }
   }
