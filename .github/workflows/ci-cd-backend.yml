@@ -45,15 +45,42 @@ jobs:
           distribution: "temurin"
           cache: maven
 
+      - name: Parse ENV_PRODUCTION secret
+        id: parse-env
+        run: |
+          # Parse ENV_PRODUCTION secret nếu có, và set vào GITHUB_ENV
+          ENV_SECRET="${{ secrets.ENV_PRODUCTION }}"
+          if [[ -n "$ENV_SECRET" ]]; then
+            echo "$ENV_SECRET" | while IFS= read -r line; do
+              # Bỏ qua dòng trống và comment
+              [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+              
+              # Tách key=value
+              if [[ "$line" =~ ^[[:space:]]*([^=]+)=(.*)$ ]]; then
+                key="${BASH_REMATCH[1]}"
+                value="${BASH_REMATCH[2]}"
+                key=$(echo "$key" | xargs)
+                value=$(echo "$value" | sed 's/#.*//' | xargs)
+                
+                if [[ -n "$key" && -n "$value" ]]; then
+                  # Set vào GITHUB_ENV để dùng trong các step sau
+                  echo "${key}=${value}" >> $GITHUB_ENV
+                fi
+              fi
+            done
+          fi
+        shell: bash
+
       - name: Run tests
         working-directory: backend/demo
         env:
-          DB_URL: jdbc:mysql://localhost:3306/testdb
-          DB_USERNAME: root
-          DB_PASSWORD: root
-          JWT_BASE64_SECRET: test-secret-key-for-ci-cd-pipeline-only
-          JWT_ACCESS_EXPIRE: 86400
-          JWT_REFRESH_EXPIRE: 604800
+          # Ưu tiên: secrets riêng lẻ > ENV_PRODUCTION đã parse > giá trị mặc định
+          DB_URL: ${{ secrets.DB_URL || 'jdbc:mysql://localhost:3306/testdb' }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME || 'root' }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD || 'root' }}
+          JWT_BASE64_SECRET: ${{ secrets.JWT_BASE64_SECRET || 'test-secret-key-for-ci-cd-pipeline-only' }}
+          JWT_ACCESS_EXPIRE: ${{ secrets.JWT_ACCESS_EXPIRE || '86400' }}
+          JWT_REFRESH_EXPIRE: ${{ secrets.JWT_REFRESH_EXPIRE || '604800' }}
         run: mvn clean test -B
 
       - name: Upload test results
@@ -99,6 +126,7 @@ jobs:
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
 
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -109,6 +137,10 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          # Có thể thêm build args nếu cần
+          # build-args: |
+          #   DB_URL=${{ secrets.DB_URL || env.DB_URL }}
+          #   JWT_BASE64_SECRET=${{ secrets.JWT_BASE64_SECRET || env.JWT_BASE64_SECRET }}
 
   deploy:
     name: Deploy to Production
