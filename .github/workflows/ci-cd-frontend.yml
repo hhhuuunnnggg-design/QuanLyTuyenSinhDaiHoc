@@ -1,72 +1,62 @@
-name: Backend CI/CD
+name: Frontend CI/CD
 
 on:
   push:
     branches: ["main", "master", "restFull"]
     paths:
-      - "backend/demo/**"
-      - ".github/workflows/ci-cd-backend.yml"
+      - "front_end/01-react-vite-starter/**"
+      - ".github/workflows/ci-cd-frontend.yml"
   pull_request:
     branches: ["main", "master", "restFull"]
     paths:
-      - "backend/demo/**"
+      - "front_end/01-react-vite-starter/**"
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/backend
+  IMAGE_NAME: ${{ github.repository }}/frontend
+  NODE_VERSION: "20"
 
 jobs:
-  test:
-    name: Test Backend
+  lint-and-test:
+    name: Lint and Test Frontend
     runs-on: ubuntu-latest
-    
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: testdb
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          java-version: "17"
-          distribution: "temurin"
-          cache: maven
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: front_end/01-react-vite-starter/package-lock.json
 
-      - name: Run tests
-        working-directory: backend/demo
+      - name: Install dependencies
+        working-directory: front_end/01-react-vite-starter
+        run: npm ci
+
+      - name: Run linter
+        working-directory: front_end/01-react-vite-starter
+        run: npm run lint || true
+
+      - name: Build application
+        working-directory: front_end/01-react-vite-starter
         env:
-          DB_URL: jdbc:mysql://localhost:3306/testdb
-          DB_USERNAME: root
-          DB_PASSWORD: root
-          JWT_BASE64_SECRET: test-secret-key-for-ci-cd-pipeline-only
-          JWT_ACCESS_EXPIRE: 86400
-          JWT_REFRESH_EXPIRE: 604800
-        run: mvn clean test -B
+          VITE_BACKEND_URL: ${{ secrets.VITE_BACKEND_URL || 'http://localhost:8080' }}
+        run: npm run build
 
-      - name: Upload test results
-        if: always()
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
-          path: backend/demo/target/surefire-reports/
+          name: frontend-build
+          path: front_end/01-react-vite-starter/dist/
+          retention-days: 7
 
   build:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
-    needs: test
+    needs: lint-and-test
     if: github.event_name == 'push'
     permissions:
       contents: read
@@ -102,13 +92,15 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: backend/demo
-          file: backend/demo/Dockerfile
+          context: front_end/01-react-vite-starter
+          file: front_end/01-react-vite-starter/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            VITE_BACKEND_URL=${{ secrets.VITE_BACKEND_URL || 'http://localhost:8080' }}
 
   deploy:
     name: Deploy to Production
@@ -119,7 +111,7 @@ jobs:
     # Hoặc có thể xóa dòng này nếu không sử dụng GitHub Environments
     # environment:
     #   name: production
-    #   url: https://your-backend-domain.com
+    #   url: https://your-frontend-domain.com
 
     steps:
       - name: Checkout code
@@ -130,4 +122,4 @@ jobs:
           echo "Deploy logic here"
           # Ví dụ: SSH vào server và pull image mới
           # ssh user@server "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
-          # ssh user@server "docker-compose -f /path/to/docker-compose.yml up -d backend"
+          # ssh user@server "docker-compose -f /path/to/docker-compose.yml up -d frontend"
