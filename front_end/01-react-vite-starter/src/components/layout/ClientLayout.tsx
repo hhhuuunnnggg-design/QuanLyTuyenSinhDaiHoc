@@ -1,11 +1,11 @@
-import { ROUTES } from "@/constants";
 import { useCurrentApp } from "@/components/context/app.context";
+import { ROUTES } from "@/constants";
 import { Outlet, useLocation } from "react-router-dom";
 import AppHeader from "./AppHeader";
 
 function ClientLayout() {
   const location = useLocation();
-  const { user, isAuthenticated } = useCurrentApp();
+  const { user } = useCurrentApp();
 
   const isAuthPage =
     location.pathname === ROUTES.LOGIN || location.pathname === ROUTES.REGISTER;

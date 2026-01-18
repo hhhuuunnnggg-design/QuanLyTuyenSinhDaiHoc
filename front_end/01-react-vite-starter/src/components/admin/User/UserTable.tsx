@@ -8,7 +8,7 @@ import ProTable from "@ant-design/pro-table";
 import { Avatar, Button, Image, message, Popconfirm, Space, Tag } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+
 import AddUserModal from "./AddUserModal";
 import EditUserModal from "./EditUserModal";
 
@@ -36,7 +36,7 @@ interface IUserData {
 
 const UsersPage = () => {
   const { user } = useCurrentApp();
-  const navigate = useNavigate();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
@@ -67,17 +67,7 @@ const UsersPage = () => {
     fetchRoles();
   }, []);
 
-  useEffect(() => {
-    // Debug permission checks
-    if (user?.role?.permissions) {
-      const hasUpdatePermission = user.role.permissions.some(
-        (p) => p.apiPath === "/api/v1/users/{id}" && p.method === "PUT"
-      );
-      const hasDeletePermission = user.role.permissions.some(
-        (p) => p.apiPath === "/api/v1/users/{id}" && p.method === "DELETE"
-      );
-    }
-  }, [user]);
+
 
   const columns = [
     {
