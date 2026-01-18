@@ -12,7 +12,10 @@
     "start": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "spellcheck": "cspell \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
+    "spellcheck:fix": "cspell \"src/**/*.{ts,tsx,js,jsx,json,md}\" --no-must-find-files",
+    "spellcheck:interactive": "cspell \"src/**/*.{ts,tsx,js,jsx,json,md}\" --interactive"
   },
   "dependencies": {
     "@ant-design/icons": "5.5.1",
@@ -42,6 +45,7 @@
     "@types/react": "18.3.11",
     "@types/react-dom": "18.3.0",
     "@vitejs/plugin-react-swc": "3.7.1",
+    "cspell": "^9.6.0",
     "eslint": "9.12.0",
     "eslint-plugin-react-hooks": "5.1.0-rc.0",
     "eslint-plugin-react-refresh": "0.4.12",

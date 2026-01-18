@@ -40,6 +40,10 @@ jobs:
         working-directory: front_end/01-react-vite-starter
         run: npm run lint || true
 
+      - name: Spell Check
+        working-directory: front_end/01-react-vite-starter
+        run: npm run spellcheck
+
       - name: Build application
         working-directory: front_end/01-react-vite-starter
         env:

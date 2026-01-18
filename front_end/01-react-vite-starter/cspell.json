@@ -1,0 +1,97 @@
+{
+  "version": "0.2",
+  "language": "vi,en",
+  "dictionaries": [
+    "vi",
+    "vi-vn",
+    "en_US",
+    "typescript",
+    "node",
+    "npm",
+    "html",
+    "css",
+    "bash",
+    "companies",
+    "softwareTerms",
+    "custom-words"
+  ],
+  "dictionaryDefinitions": [
+    {
+      "name": "custom-words",
+      "path": "./cspell-custom-words.txt",
+      "addWords": true
+    }
+  ],
+  "words": [
+    "fullname",
+    "fullstask",
+    "hoidanit",
+    "vite",
+    "tsx",
+    "redux",
+    "axios",
+    "antd",
+    "procomponents",
+    "prolayout",
+    "protable",
+    "sockjs",
+    "stompjs",
+    "dotenv",
+    "lodash",
+    "querystring",
+    "reacticons",
+    "reactredux",
+    "reactrouter",
+    "springfilter",
+    "querybuilder",
+    "eslint",
+    "typescript",
+    "viteconfig",
+    "tsconfig",
+    "swc",
+    "globals",
+    "hoidanit",
+    "nguyen",
+    "hung"
+  ],
+  "ignoreWords": [
+    "camelcase",
+    "fullname",
+    "fullstask"
+  ],
+  "flagWords": [],
+  "ignorePaths": [
+    "node_modules/**",
+    "dist/**",
+    "build/**",
+    "coverage/**",
+    "*.min.js",
+    "package-lock.json",
+    "yarn.lock",
+    "pnpm-lock.yaml",
+    ".git/**",
+    ".vscode/**",
+    ".idea/**"
+  ],
+  "includeRegExpList": [
+    "/[\\u00C0-\\u1EF9]+/",
+    "/[\\u0102-\\u0103]+/",
+    "/[\\u00C2-\\u00E2]+/",
+    "/[\\u00CA-\\u00EA]+/",
+    "/[\\u00D4-\\u00F4]+/",
+    "/[\\u01A0-\\u01B0]+/",
+    "/[\\u1EA0-\\u1EF9]+/"
+  ],
+  "enabledLanguageIds": [
+    "typescript",
+    "typescriptreact",
+    "javascript",
+    "javascriptreact",
+    "json",
+    "markdown",
+    "plaintext"
+  ],
+  "caseSensitive": false,
+  "allowCompoundWords": false,
+  "checkLimit": 500
+}

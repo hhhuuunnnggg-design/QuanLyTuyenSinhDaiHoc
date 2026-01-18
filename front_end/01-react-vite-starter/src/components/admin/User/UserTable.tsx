@@ -125,7 +125,7 @@ const UsersPage = () => {
     },
 
     {
-      title: "Họ và têaaawn",
+      title: "Họ và tên",
       dataIndex: "fullname",
       key: "fullname",
       hideInSearch: true,
