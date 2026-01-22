@@ -14,7 +14,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.example.demo.domain.User;
-import com.example.demo.repository.UserServiceRepository;
+import com.example.demo.repository.AuthServiceRepository;
 import com.example.demo.service.AuthService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -64,25 +64,25 @@ public class AuthServiceImpl implements AuthService {
     private String facebookTokenUri;
 
     @Autowired
-    UserServiceRepository userServiceRepository;
+    AuthServiceRepository authServiceRepository;
 
     @Override
     public void updateUserToken(String token, String email) {
         User currentUser = this.handleGetUserByUsername(email);
         if (currentUser != null) {
             currentUser.setRefreshToken(token);
-            this.userServiceRepository.save(currentUser);
+            this.authServiceRepository.save(currentUser);
         }
     }
 
     @Override
     public User handleGetUserByUsername(String username) {
-        return this.userServiceRepository.findByEmail(username);
+        return this.authServiceRepository.findByEmail(username);
     }
 
     @Override
     public User getUserByRefreshTokenAndEmail(String token, String email) {
-        return this.userServiceRepository.findByRefreshTokenAndEmail(token, email);
+        return this.authServiceRepository.findByRefreshTokenAndEmail(token, email);
     }
 
     public String generateAuthUrl(String loginType) {
