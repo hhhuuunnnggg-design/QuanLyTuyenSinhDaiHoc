@@ -33,7 +33,7 @@
 | Thành phần | Công nghệ   | Cổng   |
 | ---------- | ----------- | ------ |
 | Backend    | Spring Boot | `8081` |
-| Frontend   | React Vite  | `3000` |
+| Frontend   | React Vite  | `3001` |
 
 ---
 
@@ -85,7 +85,22 @@ npm run dev
 - Email:nguyendinhhungtc2020@gmail.com
 ```
 
-<!-- docker -->
+### ✅ 4. Chạy docker
+
+```bash
+# Dừng và xóa container cũ
+docker-compose down
+
+
+# Build lại image và chạy lên
+docker-compose up --build -d
+
+
+# Các port trong đây
 frontend: 3001
 backend:8081
 gui phpmyadmin: 8082
+```
+
+
+
