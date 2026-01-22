@@ -3,7 +3,7 @@
 
 export const config = {
   api: {
-    baseURL: import.meta.env.VITE_BACKEND_URL || "http://localhost:8080",
+    baseURL: import.meta.env.VITE_BACKEND_URL || "http://localhost:8081",
     timeout: 30000,
   },
   app: {

@@ -2,10 +2,6 @@
 - 🔐 Đăng nhập / Đăng ký (JWT + Spring Security)
 - 🚫 Chặn truy cập trái phép & redirect về trang đăng nhập
 - 🔑 Tự động gắn token khi gọi API từ frontend bằng Axios interceptor
-- 📝 Đăng bài viết, bình luận, thích bài viết
-- 💬 Trò chuyện realtime bằng WebSocket
-- 🤖 Chat với bot AI
-- 📞 Gọi thoại qua trình duyệt
 - ⚙️ Phân quyền động theo vai trò (Admin/User)
 - 🌐 API mô tả bằng Swagger OpenAPI
 
@@ -17,7 +13,6 @@
 
 - ☕ **Java 17**, **Spring Boot 3.2.5**
 - 🔐 Spring Security + JWT
-- 🔁 WebSocket (chat realtime + gọi điện)
 - 🧠 AI Bot API
 - 🗃️ Spring Data JPA (MySQL)
 - 🧪 Hibernate Validator
@@ -37,7 +32,7 @@
 
 | Thành phần | Công nghệ   | Cổng   |
 | ---------- | ----------- | ------ |
-| Backend    | Spring Boot | `8080` |
+| Backend    | Spring Boot | `8081` |
 | Frontend   | React Vite  | `3000` |
 
 ---
@@ -83,9 +78,14 @@ npm run dev
 # 🌐API mẫu (Swagger)
 
 - Truy cập tài liệu Swagger UI tại:
-- 👉http://localhost:8080/swagger-ui/index.html
+- 👉http://localhost:8081/swagger-ui/index.html
 
 # 👨‍💻 Liên hệ
 
 - Email:nguyendinhhungtc2020@gmail.com
 ```
+
+<!-- docker -->
+frontend: 3001
+backend:8081
+gui phpmyadmin: 8082

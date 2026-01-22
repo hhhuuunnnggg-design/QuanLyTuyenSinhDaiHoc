@@ -83,9 +83,9 @@ docker-compose -f docker-compose.yml -f docker-compose.prod.yml logs -f
 ### 4. Kiểm tra Deployment
 
 - **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8080
-- **Backend Health**: http://localhost:8080/actuator/health
-- **API Docs**: http://localhost:8080/swagger-ui.html
+- **Backend API**: http://localhost:8081
+- **Backend Health**: http://localhost:8081/actuator/health
+- **API Docs**: http://localhost:8081/swagger-ui.html
 
 ### 5. CI/CD với GitHub Actions
 
@@ -152,7 +152,7 @@ docker build -t auth-backend:latest .
 ### Frontend:
 ```bash
 cd front_end/01-react-vite-starter
-docker build -t auth-frontend:latest --build-arg VITE_BACKEND_URL=http://localhost:8080 .
+docker build -t auth-frontend:latest --build-arg VITE_BACKEND_URL=http://localhost:8081 .
 ```
 
 ## 🌐 Deploy lên Server

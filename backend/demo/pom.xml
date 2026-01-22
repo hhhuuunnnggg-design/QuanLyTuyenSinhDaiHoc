@@ -122,7 +122,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- dotenv -->
+        <!-- dotenv dùng để cấu hình file .env -->
         <dependency>
             <groupId>io.github.cdimascio</groupId>
             <artifactId>dotenv-java</artifactId>

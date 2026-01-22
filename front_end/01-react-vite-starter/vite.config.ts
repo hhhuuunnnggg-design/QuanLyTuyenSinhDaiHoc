@@ -1,22 +1,26 @@
 import react from "@vitejs/plugin-react-swc";
 import dns from "dns";
 import path from "path";
-import { defineConfig } from "vite";
-// https://vitejs.dev/config/server-options.html#server-options
+import { defineConfig, loadEnv } from "vite";
+
 dns.setDefaultResultOrder("verbatim");
 
-// https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    port: 3000,
-  },
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
+export default defineConfig(({ mode }) => {
+  // 👇 load đúng file .env.development
+  const env = loadEnv(mode, process.cwd(), "");
+
+  return {
+    plugins: [react()],
+    server: {
+      port: Number(env.VITE_FRONTEND_PORT) || 3001,
     },
-  },
-  define: {
-    global: "globalThis", // 👈 Fix lỗi 'global is not defined'
-  },
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+      },
+    },
+    define: {
+      global: "globalThis",
+    },
+  };
 });
