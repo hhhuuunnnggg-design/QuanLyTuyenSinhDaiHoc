@@ -257,12 +257,65 @@ public class TTSController {
     public ResponseEntity<ResTTSAudioDTO> updateTTSAudio(
             @PathVariable Long id,
             @Valid @RequestBody ReqTTSDTO request) throws IOException, IdInvalidException {
-        TTSAudio ttsAudio = ttsAudioService.updateTTSAudio(id, request);
-        ResTTSAudioDTO dto = convertToDTO(ttsAudio);
 
-        // Trả về ResTTSAudioDTO trực tiếp, FormarRestResponse sẽ tự động wrap thành
-        // RestResponse
-        return ResponseEntity.ok(dto);
+        // Lấy audio hiện tại để kiểm tra có thay đổi không
+        TTSAudio existingAudio = ttsAudioService.getTTSAudioById(id);
+
+        // Kiểm tra xem có thay đổi gì không (text, voice, speed, format, withoutFilter)
+        boolean needsRegenerate = !existingAudio.getText().equals(request.getText()) ||
+                !existingAudio.getVoice().equals(request.getVoice()) ||
+                !existingAudio.getSpeed().equals(request.getSpeed()) ||
+                !existingAudio.getFormat().equals(request.getTtsReturnOption()) ||
+                !existingAudio.getWithoutFilter().equals(request.getWithoutFilter());
+
+        // Nếu có thay đổi, regenerate audio mới và upload lên S3
+        if (needsRegenerate) {
+            // Tạo audio mới từ text mới
+            ResponseEntity<Resource> audioResponse = ttsService.synthesizeSpeech(request);
+            Resource resource = audioResponse.getBody();
+
+            if (resource == null) {
+                throw new IdInvalidException("Không thể tạo audio mới");
+            }
+
+            byte[] audioData;
+            try (var inputStream = resource.getInputStream()) {
+                audioData = inputStream.readAllBytes();
+            }
+
+            // Tạo tên file mới
+            String fileName = generateFileName(request);
+
+            // Xóa file cũ trên S3 nếu có
+            if (existingAudio.getS3Url() != null && existingAudio.getFileName() != null) {
+                try {
+                    ttsAudioService.deleteTTSAudioFileFromS3(existingAudio.getFileName());
+                    System.out.println("✅ Đã xóa file cũ trên S3: " + existingAudio.getFileName());
+                } catch (Exception e) {
+                    System.err.println("⚠️  Không thể xóa file cũ trên S3: " + e.getMessage());
+                }
+            }
+
+            // Upload file mới lên S3 và cập nhật metadata
+            TTSAudio updatedAudio = ttsAudioService.updateTTSAudioWithNewFile(id, request, audioData, fileName);
+            ResTTSAudioDTO dto = convertToDTO(updatedAudio);
+
+            System.out.println("========================================");
+            System.out.println("✅ TTS AUDIO ĐÃ ĐƯỢC CẬP NHẬT!");
+            System.out.println("🆔 ID: " + dto.getId());
+            System.out.println("📄 File Name mới: " + dto.getFileName());
+            if (dto.getS3Url() != null) {
+                System.out.println("🔗 S3 URL mới: " + dto.getS3Url());
+            }
+            System.out.println("========================================");
+
+            return ResponseEntity.ok(dto);
+        } else {
+            // Không có thay đổi, chỉ cập nhật metadata
+            TTSAudio ttsAudio = ttsAudioService.updateTTSAudio(id, request);
+            ResTTSAudioDTO dto = convertToDTO(ttsAudio);
+            return ResponseEntity.ok(dto);
+        }
     }
 
     @DeleteMapping("/audios/{id}")

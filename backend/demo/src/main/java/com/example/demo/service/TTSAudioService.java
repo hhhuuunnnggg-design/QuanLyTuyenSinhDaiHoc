@@ -27,5 +27,9 @@ public interface TTSAudioService {
 
     TTSAudio updateTTSAudio(Long id, ReqTTSDTO request) throws IOException, IdInvalidException;
     
+    TTSAudio updateTTSAudioWithNewFile(Long id, ReqTTSDTO request, byte[] audioData, String fileName) throws IOException, IdInvalidException;
+    
+    void deleteTTSAudioFileFromS3(String fileName) throws IOException;
+    
     Resource getAudioResourceFromS3(String fileName) throws IOException;
 }

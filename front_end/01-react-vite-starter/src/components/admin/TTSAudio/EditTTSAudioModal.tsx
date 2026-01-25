@@ -1,7 +1,7 @@
-import { updateTTSAudioAPI, type TTSAudio, type TTSRequest } from "@/api/tts.api";
+import { getVoicesAPI, updateTTSAudioAPI, type TTSAudio, type TTSRequest, type Voice } from "@/api/tts.api";
 import { logger } from "@/utils/logger";
 import { Button, Form, Input, message, Modal, Select, Slider, Space } from "antd";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -15,18 +15,42 @@ interface EditTTSAudioModalProps {
 
 const EditTTSAudioModal = ({ open, onCancel, onSuccess, audio }: EditTTSAudioModalProps) => {
   const [form] = Form.useForm();
+  const [voices, setVoices] = useState<Voice[]>([]);
+  const [loadingVoices, setLoadingVoices] = useState(false);
 
   useEffect(() => {
-    if (open && audio) {
-      form.setFieldsValue({
-        text: audio.text,
-        voice: audio.voice,
-        speed: audio.speed,
-        ttsReturnOption: audio.format,
-        withoutFilter: audio.withoutFilter,
-      });
+    if (open) {
+      fetchVoices();
+      if (audio) {
+        form.setFieldsValue({
+          text: audio.text,
+          voice: audio.voice,
+          speed: audio.speed,
+          ttsReturnOption: audio.format,
+          withoutFilter: audio.withoutFilter,
+        });
+      }
     }
   }, [open, audio, form]);
+
+  const fetchVoices = async () => {
+    try {
+      setLoadingVoices(true);
+      const response = await getVoicesAPI();
+      // Response format: { statusCode, error, message, data: { voices: Voice[] } }
+      if (response?.data?.voices) {
+        setVoices(response.data.voices);
+      } else {
+        logger.warn("Invalid voices response format:", response);
+        message.warning("Không thể tải danh sách giọng đọc từ API");
+      }
+    } catch (error: any) {
+      logger.error("Fetch voices error:", error);
+      message.error("Không thể tải danh sách giọng đọc: " + (error?.message || "Lỗi không xác định"));
+    } finally {
+      setLoadingVoices(false);
+    }
+  };
 
   const handleSubmit = async (values: TTSRequest) => {
     try {
@@ -70,13 +94,17 @@ const EditTTSAudioModal = ({ open, onCancel, onSuccess, audio }: EditTTSAudioMod
           label="Giọng đọc"
           rules={[{ required: true, message: "Vui lòng chọn giọng đọc" }]}
         >
-          <Select placeholder="Chọn giọng đọc">
-            <Option value="hn-quynhanh">Quỳnh Anh - Nữ miền Bắc</Option>
-            <Option value="hcm-diemmy">Diễm My - Nữ miền Nam</Option>
-            <Option value="hue-maingoc">Mai Ngọc - Nữ miền Trung</Option>
-            <Option value="hn-thanhtung">Thanh Tùng - Nam miền Bắc</Option>
-            <Option value="hcm-minhquan">Minh Quân - Nam miền Nam</Option>
-            <Option value="hue-baoquoc">Bảo Quốc - Nam miền Trung</Option>
+          <Select placeholder="Chọn giọng đọc" loading={loadingVoices} disabled={loadingVoices || voices.length === 0}>
+            {voices.map((voice) => (
+              <Option key={voice.code} value={voice.code}>
+                {voice.name} - {voice.description} ({voice.location})
+              </Option>
+            ))}
+            {!loadingVoices && voices.length === 0 && (
+              <Option value="" disabled>
+                Không có giọng đọc nào
+              </Option>
+            )}
           </Select>
         </Form.Item>
 

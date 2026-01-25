@@ -159,13 +159,65 @@ public class TTSAudioServiceImpl implements TTSAudioService {
     @Transactional
     public TTSAudio updateTTSAudio(Long id, ReqTTSDTO request) throws IOException, IdInvalidException {
         TTSAudio ttsAudio = getTTSAudioById(id);
+        
+        // Cập nhật metadata (không regenerate audio)
         ttsAudio.setText(request.getText());
         ttsAudio.setVoice(request.getVoice());
         ttsAudio.setSpeed(request.getSpeed());
         ttsAudio.setFormat(request.getTtsReturnOption());
         ttsAudio.setWithoutFilter(request.getWithoutFilter());
         ttsAudio.setUpdatedAt(Instant.now());
+        
         return ttsAudioRepository.save(ttsAudio);
+    }
+    
+    @Override
+    @Transactional
+    public TTSAudio updateTTSAudioWithNewFile(Long id, ReqTTSDTO request, byte[] audioData, String fileName) 
+            throws IOException, IdInvalidException {
+        TTSAudio ttsAudio = getTTSAudioById(id);
+        String contentType = request.getTtsReturnOption() == 2 ? "audio/wav" : "audio/mpeg";
+        String s3Url = null;
+        
+        // Upload file mới lên S3
+        if (s3Service != null) {
+            try {
+                s3Url = s3Service.uploadFile(
+                        new ByteArrayInputStream(audioData),
+                        fileName,
+                        contentType,
+                        "tts-audios");
+                
+                System.out.println("✅ Đã upload file mới lên S3: " + s3Url);
+            } catch (Exception e) {
+                System.err.println("⚠️  Không thể upload file mới lên S3: " + e.getMessage());
+            }
+        }
+        
+        // Cập nhật metadata và file info
+        ttsAudio.setText(request.getText());
+        ttsAudio.setVoice(request.getVoice());
+        ttsAudio.setSpeed(request.getSpeed());
+        ttsAudio.setFormat(request.getTtsReturnOption());
+        ttsAudio.setWithoutFilter(request.getWithoutFilter());
+        ttsAudio.setFileName("tts-audios/" + fileName);
+        ttsAudio.setS3Url(s3Url);
+        ttsAudio.setFileSize((long) audioData.length);
+        ttsAudio.setMimeType(contentType);
+        ttsAudio.setUpdatedAt(Instant.now());
+        
+        return ttsAudioRepository.save(ttsAudio);
+    }
+    
+    @Override
+    public void deleteTTSAudioFileFromS3(String fileName) throws IOException {
+        if (s3Service != null && fileName != null) {
+            try {
+                s3Service.deleteFile(fileName);
+            } catch (Exception e) {
+                throw new IOException("Không thể xóa file trên S3: " + e.getMessage(), e);
+            }
+        }
     }
 
     @Override
