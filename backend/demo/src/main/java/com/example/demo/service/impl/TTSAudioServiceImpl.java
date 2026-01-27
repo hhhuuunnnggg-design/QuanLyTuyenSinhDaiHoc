@@ -109,6 +109,15 @@ public class TTSAudioServiceImpl implements TTSAudioService {
                 .mimeType(contentType)
                 .createdAt(Instant.now())
                 .createdBy(createdBy)
+                // Thông tin thuyết minh ẩm thực
+                .foodName(request.getFoodName())
+                .price(request.getPrice())
+                .description(request.getDescription())
+                .imageUrl(request.getImageUrl())
+                // Vị trí GPS
+                .latitude(request.getLatitude())
+                .longitude(request.getLongitude())
+                .accuracy(request.getAccuracy())
                 .build();
 
         return ttsAudioRepository.save(ttsAudio);
@@ -166,6 +175,15 @@ public class TTSAudioServiceImpl implements TTSAudioService {
         ttsAudio.setSpeed(request.getSpeed());
         ttsAudio.setFormat(request.getTtsReturnOption());
         ttsAudio.setWithoutFilter(request.getWithoutFilter());
+        // Thông tin ẩm thực
+        ttsAudio.setFoodName(request.getFoodName());
+        ttsAudio.setPrice(request.getPrice());
+        ttsAudio.setDescription(request.getDescription());
+        ttsAudio.setImageUrl(request.getImageUrl());
+        // GPS
+        ttsAudio.setLatitude(request.getLatitude());
+        ttsAudio.setLongitude(request.getLongitude());
+        ttsAudio.setAccuracy(request.getAccuracy());
         ttsAudio.setUpdatedAt(Instant.now());
         
         return ttsAudioRepository.save(ttsAudio);
@@ -204,6 +222,15 @@ public class TTSAudioServiceImpl implements TTSAudioService {
         ttsAudio.setS3Url(s3Url);
         ttsAudio.setFileSize((long) audioData.length);
         ttsAudio.setMimeType(contentType);
+        // Thông tin ẩm thực
+        ttsAudio.setFoodName(request.getFoodName());
+        ttsAudio.setPrice(request.getPrice());
+        ttsAudio.setDescription(request.getDescription());
+        ttsAudio.setImageUrl(request.getImageUrl());
+        // GPS
+        ttsAudio.setLatitude(request.getLatitude());
+        ttsAudio.setLongitude(request.getLongitude());
+        ttsAudio.setAccuracy(request.getAccuracy());
         ttsAudio.setUpdatedAt(Instant.now());
         
         return ttsAudioRepository.save(ttsAudio);
@@ -249,6 +276,13 @@ public class TTSAudioServiceImpl implements TTSAudioService {
                 .createdAt(ttsAudio.getCreatedAt())
                 .updatedAt(ttsAudio.getUpdatedAt())
                 .createdBy(ttsAudio.getCreatedBy())
+                .foodName(ttsAudio.getFoodName())
+                .price(ttsAudio.getPrice())
+                .description(ttsAudio.getDescription())
+                .imageUrl(ttsAudio.getImageUrl())
+                .latitude(ttsAudio.getLatitude())
+                .longitude(ttsAudio.getLongitude())
+                .accuracy(ttsAudio.getAccuracy())
                 .build();
     }
 }

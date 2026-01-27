@@ -1,18 +1,301 @@
-.tts-page {
-  min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+.gps-food-page {
+  display: flex;
+  min-height: calc(100vh - 64px);
+  background: #050914;
+  color: #fff;
+}
 
-  .ant-card {
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-  }
+.gps-food-sidebar {
+  width: 310px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  background: #0b1020;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
 
-  .ant-form-item-label > label {
-    font-weight: 500;
-  }
+.gps-food-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
 
-  audio {
-    border-radius: 4px;
-  }
+.gps-food-sidebar-header .app-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gps-food-sidebar-header .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #ff6b35;
+  box-shadow: 0 0 12px rgba(255, 107, 53, 0.8);
+}
+
+.gps-food-sidebar-header .title {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.gps-food-sidebar-header .subtitle {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.auto-guide-toggle {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+.gps-food-sidebar-list {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 12px;
+}
+
+.stall-item {
+  display: flex;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: all 0.15s ease;
+  background: transparent;
+}
+
+.stall-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.stall-item.active {
+  background: linear-gradient(90deg, #ff6b35, #ffb347);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+}
+
+.stall-item .thumb {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #1a2033;
+  flex-shrink: 0;
+}
+
+.stall-item .thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.stall-item .thumb .placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #999;
+}
+
+.stall-item .info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.stall-item .name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.stall-item .desc {
+  font-size: 11px;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+.stall-item .price {
+  font-size: 11px;
+  margin-top: 4px;
+  font-weight: 600;
+  color: #ffd27f;
+}
+
+.gps-food-sidebar-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.gps-food-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px;
+  background: radial-gradient(circle at top, #27365f 0, #050914 55%);
+}
+
+.hero {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  height: 260px;
+  margin-bottom: 16px;
+}
+
+.hero-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.6);
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hero-top {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.distance-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.5);
+  font-size: 11px;
+}
+
+.distance-chip strong {
+  font-weight: 700;
+}
+
+.hero-content .badges {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.hero-content .badge {
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+}
+
+.hero-content .badge.secondary {
+  background: rgba(255, 179, 71, 0.2);
+  border-color: rgba(255, 179, 71, 0.9);
+}
+
+.hero-content h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.hero-content .sub {
+  margin-top: 6px;
+  font-size: 13px;
+  max-width: 480px;
+  opacity: 0.9;
+}
+
+.audio-card {
+  margin-top: 8px;
+  background: #070c18;
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.audio-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.audio-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.audio-title {
+  margin-top: 4px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.radius {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.radius strong {
+  margin-left: 4px;
+  color: #ffd27f;
+}
+
+.audio-controls {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.audio-progress {
+  flex: 1;
+}
+
+.audio-progress .bar {
+  width: 100%;
+  height: 5px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff6b35, #ffb347);
+  opacity: 0.9;
+}
+
+.audio-progress .time-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.auto-guide-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.geo-error {
+  margin-top: 10px;
+  font-size: 11px;
+  color: #ff9999;
 }

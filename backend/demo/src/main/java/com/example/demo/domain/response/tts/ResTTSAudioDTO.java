@@ -1,5 +1,6 @@
 package com.example.demo.domain.response.tts;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 import lombok.AccessLevel;
@@ -28,4 +29,15 @@ public class ResTTSAudioDTO {
     Instant createdAt;
     Instant updatedAt;
     String createdBy;
+
+    // Thông tin thuyết minh ẩm thực
+    String foodName;
+    BigDecimal price;
+    String description;
+    String imageUrl;
+
+    // Thông tin vị trí (GPS)
+    Double latitude;
+    Double longitude;
+    Float accuracy;
 }

@@ -58,6 +58,57 @@ const TTSAudioTable = () => {
       width: 80,
     },
     {
+      title: "Ảnh",
+      dataIndex: "imageUrl",
+      key: "imageUrl",
+      width: 90,
+      hideInSearch: true,
+      render: (_: any, record: TTSAudio) =>
+        record.imageUrl ? (
+          <img
+            src={record.imageUrl}
+            alt={record.foodName || "Ảnh món"}
+            style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover" }}
+          />
+        ) : (
+          <div
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: 8,
+              background: "#f5f5f5",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 12,
+              color: "#999",
+            }}
+          >
+            No image
+          </div>
+        ),
+    },
+    {
+      title: "Món ăn / Gian hàng",
+      dataIndex: "foodName",
+      key: "foodName",
+      width: 220,
+      render: (_: any, record: TTSAudio) => (
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <span style={{ fontWeight: 600 }}>{record.foodName || "—"}</span>
+          <span style={{ fontSize: 12, color: "#888" }}>
+            {record.description
+              ? record.description.length > 40
+                ? record.description.substring(0, 40) + "..."
+                : record.description
+              : record.text.length > 40
+                ? record.text.substring(0, 40) + "..."
+                : record.text}
+          </span>
+        </div>
+      ),
+    },
+    {
       title: "Text",
       dataIndex: "text",
       key: "text",
@@ -68,6 +119,15 @@ const TTSAudioTable = () => {
           <span>{record.text.length > 50 ? record.text.substring(0, 50) + "..." : record.text}</span>
         </Tooltip>
       ),
+    },
+    {
+      title: "Giá",
+      dataIndex: "price",
+      key: "price",
+      hideInSearch: true,
+      width: 110,
+      render: (_: any, record: TTSAudio) =>
+        record.price != null ? `${Number(record.price).toLocaleString("vi-VN")} ₫` : "—",
     },
     {
       title: "Voice",
@@ -101,6 +161,29 @@ const TTSAudioTable = () => {
       hideInSearch: true,
       width: 120,
       render: (_: any, record: TTSAudio) => formatFileSize(record.fileSize),
+    },
+    {
+      title: "GPS",
+      dataIndex: "latitude",
+      key: "gps",
+      hideInSearch: true,
+      width: 160,
+      render: (_: any, record: TTSAudio) =>
+        record.latitude != null && record.longitude != null ? (
+          <div style={{ fontSize: 12 }}>
+            <div>
+              Lat: <b>{record.latitude.toFixed(5)}</b>
+            </div>
+            <div>
+              Lng: <b>{record.longitude.toFixed(5)}</b>
+            </div>
+            {record.accuracy != null && (
+              <div style={{ color: "#999" }}>R: {record.accuracy}m</div>
+            )}
+          </div>
+        ) : (
+          <span>—</span>
+        ),
     },
     {
       title: "Created By",

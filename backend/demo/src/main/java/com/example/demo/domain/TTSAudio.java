@@ -1,5 +1,6 @@
 package com.example.demo.domain;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 import jakarta.persistence.Column;
@@ -63,4 +64,27 @@ public class TTSAudio {
     // Thông tin user tạo (nếu cần)
     @Column
     String createdBy; // Email của user
+
+    // Thông tin thuyết minh ẩm thực
+    @Column
+    String foodName; // Tên món ăn
+
+    @Column
+    BigDecimal price; // Giá món ăn
+
+    @Column(columnDefinition = "TEXT")
+    String description; // Mô tả chi tiết món ăn
+
+    @Column
+    String imageUrl; // Link ảnh món ăn
+
+    // Thông tin vị trí (GPS)
+    @Column
+    Double latitude; // Vĩ độ
+
+    @Column
+    Double longitude; // Kinh độ
+
+    @Column
+    Float accuracy; // Độ chính xác của vị trí (mét)
 }

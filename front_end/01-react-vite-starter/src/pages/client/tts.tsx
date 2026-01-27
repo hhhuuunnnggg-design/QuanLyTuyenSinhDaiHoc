@@ -1,388 +1,345 @@
-import {
-  getVoicesAPI,
-  synthesizeAndSaveAPI,
-  synthesizeSpeechAPI,
-  type TTSRequest,
-  type Voice,
-} from "@/api/tts.api";
-import { PauseCircleOutlined, PlayCircleOutlined, SoundOutlined } from "@ant-design/icons";
-import { Button, Card, Checkbox, Form, Input, message, Select, Slider, Space, Spin } from "antd";
-import { useEffect, useRef, useState } from "react";
+import { getTTSAudiosAPI, type TTSAudio } from "@/api/tts.api";
+import { config } from "@/config";
+import { API_ENDPOINTS } from "@/constants";
+import { CompassOutlined, PauseCircleOutlined, PlayCircleOutlined } from "@ant-design/icons";
+import { Button, message, Switch, Tooltip } from "antd";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./tts.scss";
 
-const { TextArea } = Input;
-const { Option } = Select;
+interface GeoPosition {
+  lat: number;
+  lng: number;
+}
+
+const haversineDistance = (p1: GeoPosition, p2: GeoPosition) => {
+  const R = 6371000; // metres
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const dLat = toRad(p2.lat - p1.lat);
+  const dLon = toRad(p2.lng - p1.lng);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(p1.lat)) * Math.cos(toRad(p2.lat)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
 
 const TTSPage = () => {
-  const [form] = Form.useForm();
-  const [voices, setVoices] = useState<Voice[]>([]);
+  const [audios, setAudios] = useState<TTSAudio[]>([]);
   const [loading, setLoading] = useState(false);
-  const [loadingVoices, setLoadingVoices] = useState(true);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [autoGuide, setAutoGuide] = useState(true);
+  const [geoEnabled, setGeoEnabled] = useState(false);
+  const [position, setPosition] = useState<GeoPosition | null>(null);
+  const [geoError, setGeoError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [savingToS3, setSavingToS3] = useState(false);
-  const [currentAudioInfo, setCurrentAudioInfo] = useState<{
-    text: string;
-    voice: string;
-    format: number;
-  } | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Lấy danh sách giọng đọc khi component mount
   useEffect(() => {
-    fetchVoices();
-  }, []);
-
-  // Update audio src khi audioUrl thay đổi
-  useEffect(() => {
-    if (audioRef.current && audioUrl) {
-      audioRef.current.src = audioUrl;
-      audioRef.current.load();
-    }
-  }, [audioUrl]);
-
-  // Cleanup audio khi component unmount
-  useEffect(() => {
-    return () => {
-      if (audioUrl) {
-        URL.revokeObjectURL(audioUrl);
-      }
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = "";
+    const fetch = async () => {
+      try {
+        setLoading(true);
+        const res: any = await getTTSAudiosAPI(1, 100);
+        let data: TTSAudio[] = [];
+        if (res?.data?.meta && res?.data?.result) {
+          data = res.data.result as TTSAudio[];
+        } else if (res?.meta && res?.result) {
+          data = res.result as TTSAudio[];
+        }
+        setAudios(data);
+        if (data.length > 0) {
+          setSelectedId(data[0].id);
+        }
+      } catch (err: any) {
+        message.error("Không thể tải danh sách audio ẩm thực");
+      } finally {
+        setLoading(false);
       }
     };
-  }, [audioUrl]);
+    fetch();
+  }, []);
 
-  const fetchVoices = async () => {
-    try {
-      setLoadingVoices(true);
-      const response = await getVoicesAPI();
-      
-      if (response?.data?.voices) {
-        setVoices(response.data.voices);
-        
-        // Set default voice là Diễm My (miền Nam)
-        const defaultVoice = response.data.voices.find((v) => v.code === "hcm-diemmy");
-        if (defaultVoice) {
-          form.setFieldsValue({ voice: defaultVoice.code });
+  // Geolocation
+  useEffect(() => {
+    if (!autoGuide) return;
+    if (!navigator.geolocation) {
+      setGeoError("Trình duyệt không hỗ trợ GPS");
+      return;
+    }
+
+    const watcher = navigator.geolocation.watchPosition(
+      (pos) => {
+        setGeoEnabled(true);
+        setGeoError(null);
+        setPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      },
+      (err) => {
+        setGeoEnabled(false);
+        setGeoError(err.message || "Không thể lấy vị trí");
+      },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+    );
+
+    return () => navigator.geolocation.clearWatch(watcher);
+  }, [autoGuide]);
+
+  // Tự chọn điểm gần nhất trong bán kính
+  useEffect(() => {
+    if (!autoGuide || !position || audios.length === 0) return;
+
+    let bestId: number | null = null;
+    let bestDist = Infinity;
+
+    audios.forEach((audio) => {
+      if (audio.latitude != null && audio.longitude != null) {
+        const dist = haversineDistance(position, { lat: audio.latitude, lng: audio.longitude });
+        const radius = audio.accuracy ?? 50;
+        if (dist <= radius && dist < bestDist) {
+          bestDist = dist;
+          bestId = audio.id;
         }
       }
-    } catch (error: any) {
-      message.error("Không thể tải danh sách giọng đọc: " + (error?.message || "Lỗi không xác định"));
-    } finally {
-      setLoadingVoices(false);
+    });
+
+    if (bestId != null && bestId !== selectedId) {
+      setSelectedId(bestId);
     }
+  }, [autoGuide, position, audios, selectedId]);
+
+  const selected = useMemo(
+    () => audios.find((a) => a.id === selectedId) || audios[0] || null,
+    [audios, selectedId]
+  );
+
+  const currentDistance = useMemo(() => {
+    if (!position || !selected || selected.latitude == null || selected.longitude == null) return null;
+    return Math.round(
+      haversineDistance(position, { lat: selected.latitude, lng: selected.longitude })
+    );
+  }, [position, selected]);
+
+  const sortedAudios = useMemo(() => {
+    if (audios.length === 0) return [];
+    if (!position) return audios;
+
+    return [...audios].sort((a, b) => {
+      const distA =
+        a.latitude != null && a.longitude != null
+          ? haversineDistance(position, { lat: a.latitude, lng: a.longitude })
+          : Number.POSITIVE_INFINITY;
+      const distB =
+        b.latitude != null && b.longitude != null
+          ? haversineDistance(position, { lat: b.latitude, lng: b.longitude })
+          : Number.POSITIVE_INFINITY;
+      return distA - distB;
+    });
+  }, [audios, position]);
+
+  const handleSelect = (id: number) => {
+    setSelectedId(id);
   };
 
-  const handleSynthesize = async (values: TTSRequest) => {
-    try {
-      setLoading(true);
-      setIsPlaying(false);
+  const handlePlayPause = () => {
+    if (!selected) return;
+    const src = `${config.api.baseURL}${API_ENDPOINTS.TTS.AUDIO_DOWNLOAD(selected.id)}`;
+    if (!audioRef.current) return;
 
-      // Dọn dẹp audio cũ
-      if (audioUrl) {
-        URL.revokeObjectURL(audioUrl);
-        setAudioUrl(null);
-      }
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = "";
-      }
-      setCurrentAudioInfo(null);
-
-      // Gọi API
-      const response = await synthesizeSpeechAPI({
-        text: values.text,
-        voice: values.voice,
-        speed: values.speed || 1.0,
-        ttsReturnOption: values.ttsReturnOption || 3,
-        withoutFilter: values.withoutFilter || false,
-      });
-
-      // Kiểm tra response có phải là Blob không
-      if (!(response instanceof Blob)) {
-        console.error("Response không phải là Blob:", response);
-        throw new Error("Response không phải là audio file hợp lệ");
-      }
-
-      // Kiểm tra size của blob
-      if (response.size === 0) {
-        throw new Error("Audio file rỗng");
-      }
-
-      console.log("Blob size:", response.size, "Type:", response.type);
-
-      // Tạo URL từ blob
-      const url = URL.createObjectURL(response);
-      setAudioUrl(url);
-
-      // Lưu thông tin audio để dùng cho tên file
-      setCurrentAudioInfo({
-        text: values.text,
-        voice: values.voice,
-        format: values.ttsReturnOption || 3,
-      });
-
-      message.success("Tạo audio thành công!");
-    } catch (error: any) {
-      message.error("Lỗi khi tạo audio: " + (error?.message || "Lỗi không xác định"));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSaveToS3 = async () => {
-    if (!currentAudioInfo) {
-      message.warning("Chưa có audio để lưu");
-      return;
-    }
-
-    try {
-      setSavingToS3(true);
-      const values = form.getFieldsValue();
-      const response = await synthesizeAndSaveAPI({
-        text: values.text,
-        voice: values.voice,
-        speed: values.speed || 1.0,
-        ttsReturnOption: values.ttsReturnOption || 3,
-        withoutFilter: values.withoutFilter || false,
-      });
-
-      if (response?.data) {
-        message.success("Đã lưu audio lên S3 thành công!");
-        console.log("Audio saved to S3:", response.data);
-      }
-    } catch (error: any) {
-      message.error("Lỗi khi lưu audio lên S3: " + (error?.message || "Lỗi không xác định"));
-    } finally {
-      setSavingToS3(false);
-    }
-  };
-
-  const handlePlayPause = async () => {
-    if (!audioRef.current || !audioUrl) {
-      message.warning("Chưa có audio để phát");
-      return;
-    }
-
-    if (isPlaying) {
+    if (!isPlaying) {
+      audioRef.current.src = src;
+      audioRef.current
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch((err) => {
+          console.error(err);
+          message.error("Không thể phát audio");
+        });
+    } else {
       audioRef.current.pause();
       setIsPlaying(false);
-    } else {
-      try {
-        // Đảm bảo src được set
-        if (!audioRef.current.src || audioRef.current.src !== audioUrl) {
-          audioRef.current.src = audioUrl;
-          await audioRef.current.load();
-        }
-        
-        await audioRef.current.play();
-        setIsPlaying(true);
-      } catch (error: any) {
-        console.error("Lỗi khi phát audio:", error);
-        message.error("Không thể phát audio: " + (error?.message || "Lỗi không xác định"));
-        setIsPlaying(false);
-      }
     }
   };
 
-  // Tạo tên file hợp lý
-  const generateFileName = (): string => {
-    if (!currentAudioInfo) {
-      return `tts-audio.${form.getFieldValue("ttsReturnOption") === 2 ? "wav" : "mp3"}`;
+  const formatDistance = (d: number | null) => {
+    if (d == null) return "—";
+    if (d < 1000) return `${d}m`;
+    return `${(d / 1000).toFixed(1)}km`;
+  };
+
+  // Dừng audio nếu đã ra khỏi bán kính kích hoạt
+  useEffect(() => {
+    if (!isPlaying || !position || !selected) return;
+    if (selected.latitude == null || selected.longitude == null) return;
+
+    const radius = selected.accuracy ?? 30;
+    const dist = haversineDistance(position, {
+      lat: selected.latitude,
+      lng: selected.longitude,
+    });
+
+    if (dist > radius && audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
     }
-
-    // Lấy preview text (30 ký tự đầu, loại bỏ ký tự đặc biệt)
-    const textPreview = currentAudioInfo.text
-      .slice(0, 30)
-      // cspell:disable-next-line -- danh sách ký tự tiếng Việt phục vụ regex sanitize
-      .replace(/[^a-zA-Z0-9\sàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/gi, "")
-      .replace(/\s+/g, "-")
-      .toLowerCase()
-      .trim();
-
-    // Lấy tên voice từ code (ví dụ: hcm-diemmy -> diemmy)
-    const voiceName = currentAudioInfo.voice.split("-").pop() || "voice";
-
-    // Tạo timestamp
-    const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-
-    // Format extension
-    const ext = currentAudioInfo.format === 2 ? "wav" : "mp3";
-
-    // Tên file: tts-{text-preview}-{voice}-{date}.{ext}
-    return `tts-${textPreview}-${voiceName}-${timestamp}.${ext}`;
-  };
-
-  // Nhóm giọng theo vùng miền
-  const voicesByLocation = {
-    BAC: voices.filter((v) => v.location === "BAC"),
-    NAM: voices.filter((v) => v.location === "NAM"),
-    TRUNG: voices.filter((v) => v.location === "TRUNG"),
-  };
+  }, [isPlaying, position, selected]);
 
   return (
-    <div className="tts-page">
-      <Card
-        title={
-          <Space>
-            <SoundOutlined />
-            <span>Text to Speech - Chuyển đổi văn bản thành giọng nói</span>
-          </Space>
-        }
-        style={{ maxWidth: 800, margin: "20px auto" }}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSynthesize}
-          initialValues={{
-            speed: 1.0,
-            ttsReturnOption: 3,
-            withoutFilter: false,
-          }}
-        >
-          <Form.Item
-            name="text"
-            label="Nhập văn bản cần chuyển đổi"
-            rules={[{ required: true, message: "Vui lòng nhập văn bản" }]}
-          >
-            <TextArea
-              rows={4}
-              placeholder="Nhập văn bản tiếng Việt cần chuyển đổi thành giọng nói..."
-              showCount
-              maxLength={1000}
+    <div className="gps-food-page">
+      <div className="gps-food-sidebar">
+        <div className="gps-food-sidebar-header">
+          <div className="app-title">
+            <span className="dot" />
+            <div>
+              <div className="title">Phố Ẩm Thực GPS</div>
+              <div className="subtitle">Hệ thống thuyết minh tự động</div>
+            </div>
+          </div>
+          <div className="auto-guide-toggle">
+            <span>AUTO-GUIDE</span>
+            <Switch
+              checked={autoGuide}
+              onChange={setAutoGuide}
+              size="small"
+              style={{ marginLeft: 8 }}
             />
-          </Form.Item>
+          </div>
+        </div>
 
-          <Form.Item
-            name="voice"
-            label="Chọn giọng đọc"
-            rules={[{ required: true, message: "Vui lòng chọn giọng đọc" }]}
-          >
-            {loadingVoices ? (
-              <Spin />
-            ) : (
-              <Select 
-                placeholder="Chọn giọng đọc" 
-                showSearch 
-                filterOption={(input, option) => {
-                  const label = String(option?.label || option?.children || '');
-                  return label.toLowerCase().includes(input.toLowerCase());
-                }}
+        <div className="gps-food-sidebar-list">
+          {sortedAudios.map((audio) => {
+            const isActive = selected && audio.id === selected.id;
+            return (
+              <div
+                key={audio.id}
+                className={`stall-item ${isActive ? "active" : ""}`}
+                onClick={() => handleSelect(audio.id)}
               >
-                {voicesByLocation.BAC.length > 0 && (
-                  <>
-                    <Option value="" disabled key="bac-header">
-                      === Miền Bắc ===
-                    </Option>
-                    {voicesByLocation.BAC.map((voice) => (
-                      <Option key={voice.code} value={voice.code}>
-                        {voice.name} - {voice.description}
-                      </Option>
-                    ))}
-                  </>
-                )}
-                {voicesByLocation.NAM.length > 0 && (
-                  <>
-                    <Option value="" disabled key="nam-header">
-                      === Miền Nam ===
-                    </Option>
-                    {voicesByLocation.NAM.map((voice) => (
-                      <Option key={voice.code} value={voice.code}>
-                        {voice.name} - {voice.description}
-                      </Option>
-                    ))}
-                  </>
-                )}
-                {voicesByLocation.TRUNG.length > 0 && (
-                  <>
-                    <Option value="" disabled key="trung-header">
-                      === Miền Trung ===
-                    </Option>
-                    {voicesByLocation.TRUNG.map((voice) => (
-                      <Option key={voice.code} value={voice.code}>
-                        {voice.name} - {voice.description}
-                      </Option>
-                    ))}
-                  </>
-                )}
-              </Select>
-            )}
-          </Form.Item>
+                <div className="thumb">
+                  {audio.imageUrl ? (
+                    <img src={audio.imageUrl} alt={audio.foodName || "Ảnh món"} />
+                  ) : (
+                    <div className="placeholder">IMG</div>
+                  )}
+                </div>
+                <div className="info">
+                  <div className="name">{audio.foodName || "Món chưa đặt tên"}</div>
+                  <div className="desc">
+                    {audio.description
+                      ? audio.description.length > 40
+                        ? audio.description.substring(0, 40) + "..."
+                        : audio.description
+                      : audio.text.length > 40
+                        ? audio.text.substring(0, 40) + "..."
+                        : audio.text}
+                  </div>
+                  {audio.price != null && (
+                    <div className="price">
+                      {Number(audio.price).toLocaleString("vi-VN")} ₫
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
 
-          <Form.Item name="speed" label="Tốc độ giọng nói">
-            <Slider
-              min={0.8}
-              max={1.2}
-              step={0.1}
-              marks={{
-                0.8: "Chậm",
-                1.0: "Bình thường",
-                1.2: "Nhanh",
-              }}
-            />
-          </Form.Item>
+          {!loading && sortedAudios.length === 0 && (
+            <div className="empty-state">
+              Chưa có audio ẩm thực nào. Hãy tạo ở trang Admin &gt; TTS Audio.
+            </div>
+          )}
+        </div>
 
-          <Form.Item name="ttsReturnOption" label="Định dạng file">
-            <Select>
-              <Option value={2}>WAV</Option>
-              <Option value={3}>MP3</Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item name="withoutFilter" valuePropName="checked">
-            <Checkbox>Không sử dụng filter (nhanh hơn, chất lượng thấp hơn)</Checkbox>
-          </Form.Item>
-
-          <Form.Item>
-            <Button type="primary" htmlType="submit" loading={loading} icon={<SoundOutlined />} block>
-              Tạo Audio
-            </Button>
-          </Form.Item>
-        </Form>
-
-        {audioUrl && (
-          <Card
-            title="Audio đã tạo"
-            style={{ marginTop: 20 }}
-            extra={
-              <Button
-                type="primary"
-                icon={isPlaying ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
-                onClick={handlePlayPause}
-              >
-                {isPlaying ? "Tạm dừng" : "Phát"}
-              </Button>
-            }
+        <div className="gps-food-sidebar-footer">
+          <Button size="small">Ngôn ngữ: VI</Button>
+          <Button
+            size="small"
+            icon={<CompassOutlined />}
+            type={geoEnabled ? "primary" : "default"}
           >
-            <audio
-              ref={audioRef}
-              src={audioUrl}
-              controls
-              style={{ width: "100%" }}
-              onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
-              onEnded={() => setIsPlaying(false)}
-            />
-            <div style={{ marginTop: 10 }}>
-              <Space>
-                <a href={audioUrl} download={generateFileName()}>
-                  <Button>Tải xuống</Button>
-                </a>
+            GPS: {geoEnabled ? "BẬT" : "TẮT"}
+          </Button>
+        </div>
+      </div>
+
+      <div className="gps-food-main">
+        {selected && (
+          <>
+            <div className="hero">
+              <div className="hero-bg">
+                {selected.imageUrl && <img src={selected.imageUrl} alt={selected.foodName || ""} />}
+              </div>
+
+              <div className="hero-overlay">
+                <div className="hero-top">
+                  <div className="distance-chip">
+                    <span>Cách bạn</span>
+                    <strong>{formatDistance(currentDistance)}</strong>
+                  </div>
+                </div>
+
+                <div className="hero-content">
+                  <div className="badges">
+                    <span className="badge">TRUYỀN THỐNG</span>
+                    <span className="badge secondary">BÁN CHẠY</span>
+                  </div>
+                  <h1>{selected.foodName || "Món chưa đặt tên"}</h1>
+                  <p className="sub">
+                    {selected.text.length > 80
+                      ? selected.text.substring(0, 80) + "..."
+                      : selected.text}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="audio-card">
+              <div className="audio-header">
+                <div>
+                  <div className="audio-label">AUDIO GUIDE</div>
+                  <div className="audio-title">
+                    {selected.description && selected.description.length > 0
+                      ? "Lịch sử & cách chế biến"
+                      : "Thuyết minh món ăn"}
+                  </div>
+                </div>
+                <div className="radius">
+                  <span>Bán kính kích hoạt:</span>
+                  <strong>{selected.accuracy ?? 30}m</strong>
+                </div>
+              </div>
+
+              <div className="audio-controls">
                 <Button
                   type="primary"
-                  onClick={handleSaveToS3}
-                  loading={savingToS3}
-                >
-                  Lưu lên S3
-                </Button>
-              </Space>
+                  size="large"
+                  shape="circle"
+                  icon={isPlaying ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
+                  onClick={handlePlayPause}
+                />
+                <div className="audio-progress">
+                  <div className="bar" />
+                  <div className="time-row">
+                    <span>0:00</span>
+                    <span>--:--</span>
+                  </div>
+                </div>
+                <Tooltip title="GPS auto-guide sẽ tự động phát khi bạn vào vùng bán kính cho phép">
+                  <div className="auto-guide-pill">
+                    <CompassOutlined />
+                    <span>{autoGuide ? "Auto-guide đang bật" : "Auto-guide đang tắt"}</span>
+                  </div>
+                </Tooltip>
+              </div>
+
+              {geoError && <div className="geo-error">{geoError}</div>}
             </div>
-          </Card>
+          </>
         )}
-      </Card>
+
+        <audio
+          ref={audioRef}
+          onEnded={() => setIsPlaying(false)}
+          style={{ display: "none" }}
+        />
+      </div>
     </div>
   );
 };

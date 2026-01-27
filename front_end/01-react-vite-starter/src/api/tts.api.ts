@@ -19,6 +19,17 @@ export interface TTSRequest {
   speed?: number;
   ttsReturnOption?: number; // 2: wav, 3: mp3
   withoutFilter?: boolean;
+
+  // Thông tin thuyết minh ẩm thực (dùng cho GPS Food Guide)
+  foodName?: string;
+  price?: number;
+  description?: string;
+  imageUrl?: string;
+
+  // Thông tin vị trí (GPS)
+  latitude?: number;
+  longitude?: number;
+  accuracy?: number;
 }
 
 export interface TTSAudio {
@@ -35,6 +46,17 @@ export interface TTSAudio {
   createdAt: string;
   updatedAt: string | null;
   createdBy: string;
+
+  // Thông tin thuyết minh ẩm thực
+  foodName?: string | null;
+  price?: number | null;
+  description?: string | null;
+  imageUrl?: string | null;
+
+  // Thông tin vị trí (GPS)
+  latitude?: number | null;
+  longitude?: number | null;
+  accuracy?: number | null;
 }
 
 // Lấy danh sách giọng đọc

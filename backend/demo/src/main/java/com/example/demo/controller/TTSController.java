@@ -364,6 +364,13 @@ public class TTSController {
                 .createdAt(ttsAudio.getCreatedAt())
                 .updatedAt(ttsAudio.getUpdatedAt())
                 .createdBy(ttsAudio.getCreatedBy())
+                .foodName(ttsAudio.getFoodName())
+                .price(ttsAudio.getPrice())
+                .description(ttsAudio.getDescription())
+                .imageUrl(ttsAudio.getImageUrl())
+                .latitude(ttsAudio.getLatitude())
+                .longitude(ttsAudio.getLongitude())
+                .accuracy(ttsAudio.getAccuracy())
                 .build();
     }
 }

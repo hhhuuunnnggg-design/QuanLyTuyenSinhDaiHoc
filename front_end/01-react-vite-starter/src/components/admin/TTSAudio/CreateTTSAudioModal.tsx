@@ -1,6 +1,6 @@
 import { getVoicesAPI, synthesizeAndSaveAPI, type TTSRequest, type Voice } from "@/api/tts.api";
 import { logger } from "@/utils/logger";
-import { Button, Form, Input, message, Modal, Select, Slider, Space } from "antd";
+import { Button, Form, Input, InputNumber, message, Modal, Select, Slider, Space } from "antd";
 import { useEffect, useState } from "react";
 
 const { TextArea } = Input;
@@ -113,6 +113,58 @@ const CreateTTSAudioModal = ({ open, onCancel, onSuccess }: CreateTTSAudioModalP
             <Option value={2}>WAV</Option>
             <Option value={3}>MP3</Option>
           </Select>
+        </Form.Item>
+
+        {/* Thông tin ẩm thực & GPS dùng cho Phố Ẩm Thực GPS */}
+        <Form.Item
+          label="Thông tin món ăn"
+          style={{ marginBottom: 0, fontWeight: 500 }}
+        />
+
+        <Form.Item
+          name="foodName"
+          label="Tên món / gian hàng"
+          rules={[{ required: true, message: "Vui lòng nhập tên món hoặc gian hàng" }]}
+        >
+          <Input placeholder="Ví dụ: Phở Gia Truyền Cụ Tặng" />
+        </Form.Item>
+
+        <Form.Item name="price" label="Giá tham khảo (VNĐ)">
+          <InputNumber
+            style={{ width: "100%" }}
+            min={0}
+            step={1000}
+            formatter={(value) => (value ? `${Number(value).toLocaleString("vi-VN")} ₫` : "")}
+            parser={(value) => (value ? value.replace(/[^\d]/g, "") : "") as any}
+          />
+        </Form.Item>
+
+        <Form.Item name="description" label="Mô tả món ăn / nội dung thuyết minh">
+          <TextArea rows={3} placeholder="Lịch sử, cách chế biến, điểm đặc biệt của món..." />
+        </Form.Item>
+
+        <Form.Item name="imageUrl" label="Link ảnh minh họa">
+          <Input placeholder="https://..." />
+        </Form.Item>
+
+        <Form.Item
+          label="Vị trí GPS (tùy chọn, dùng cho auto-guide)"
+          style={{ marginBottom: 0, fontWeight: 500 }}
+        />
+
+        <Form.Item label="Tọa độ" style={{ marginBottom: 0 }}>
+          <Space.Compact style={{ width: "100%" }}>
+            <Form.Item name="latitude" noStyle>
+              <InputNumber style={{ width: "50%" }} placeholder="Latitude" />
+            </Form.Item>
+            <Form.Item name="longitude" noStyle>
+              <InputNumber style={{ width: "50%" }} placeholder="Longitude" />
+            </Form.Item>
+          </Space.Compact>
+        </Form.Item>
+
+        <Form.Item name="accuracy" label="Bán kính kích hoạt (mét)">
+          <InputNumber style={{ width: "100%" }} min={10} step={10} placeholder="Ví dụ: 30" />
         </Form.Item>
 
         <Form.Item>

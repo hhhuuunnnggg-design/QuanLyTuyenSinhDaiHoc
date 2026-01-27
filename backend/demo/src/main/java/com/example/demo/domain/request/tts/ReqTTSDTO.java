@@ -1,5 +1,7 @@
 package com.example.demo.domain.request.tts;
 
+import java.math.BigDecimal;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -22,4 +24,15 @@ public class ReqTTSDTO {
     Integer ttsReturnOption = 3; // 2: wav, 3: mp3
 
     Boolean withoutFilter = false;
+
+    // Thông tin thuyết minh ẩm thực
+    String foodName;       // Tên món ăn
+    BigDecimal price;      // Giá món ăn
+    String description;    // Mô tả chi tiết món ăn
+    String imageUrl;       // Link ảnh món ăn
+
+    // Thông tin vị trí (GPS)
+    Double latitude;       // Vĩ độ
+    Double longitude;      // Kinh độ
+    Float accuracy;        // Độ chính xác vị trí (mét)
 }
