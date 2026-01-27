@@ -42,6 +42,8 @@ export const API_ENDPOINTS = {
     MY_AUDIOS: "/api/v1/tts/audios/my",
     AUDIO_BY_ID: (id: number) => `/api/v1/tts/audios/${id}`,
     AUDIO_DOWNLOAD: (id: number) => `/api/v1/tts/audios/${id}/download`,
+    AUDIO_IMAGE: (id: number) => `/api/v1/tts/audios/${id}/image`,
+    IMAGE_UPLOAD: "/api/v1/tts/images/upload",
   },
 } as const;
 

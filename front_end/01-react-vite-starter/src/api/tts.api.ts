@@ -1,5 +1,6 @@
 // api/tts.api.ts
 import axios from "@/api/axios";
+import { config } from "@/config";
 import { API_ENDPOINTS } from "@/constants";
 
 export interface Voice {
@@ -109,4 +110,37 @@ export const downloadTTSAudioAPI = (id: number) => {
   return axios.get<Blob>(API_ENDPOINTS.TTS.AUDIO_DOWNLOAD(id), {
     responseType: "blob",
   });
+};
+
+// Upload ảnh món ăn lên S3 và cập nhật vào TTSAudio
+export const uploadFoodImageAPI = (id: number, imageFile: File) => {
+  const formData = new FormData();
+  formData.append("image", imageFile);
+  return axios.post<IBackendRes<TTSAudio>>(API_ENDPOINTS.TTS.AUDIO_IMAGE(id), formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+// Upload ảnh món ăn lên S3 (không cần audio ID)
+export const uploadFoodImageOnlyAPI = (imageFile: File) => {
+  const formData = new FormData();
+  formData.append("image", imageFile);
+  return axios.post<IBackendRes<{ imageUrl: string; message: string }>>(
+    API_ENDPOINTS.TTS.IMAGE_UPLOAD,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+};
+
+// Helper function để lấy image URL (bucket đã public, dùng trực tiếp S3 URL)
+export const getImageUrl = (imageUrl: string | null | undefined): string | null => {
+  if (!imageUrl) return null;
+  // Giữ nguyên URL (S3 bucket đã public)
+  return imageUrl;
 };

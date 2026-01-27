@@ -1,6 +1,13 @@
-import { getVoicesAPI, synthesizeAndSaveAPI, type TTSRequest, type Voice } from "@/api/tts.api";
+import {
+  getVoicesAPI,
+  synthesizeAndSaveAPI,
+  uploadFoodImageOnlyAPI,
+  type TTSRequest,
+  type Voice,
+} from "@/api/tts.api";
 import { logger } from "@/utils/logger";
-import { Button, Form, Input, InputNumber, message, Modal, Select, Slider, Space } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
+import { Button, Form, Input, InputNumber, message, Modal, Select, Slider, Space, Upload } from "antd";
 import { useEffect, useState } from "react";
 
 const { TextArea } = Input;
@@ -17,11 +24,14 @@ const CreateTTSAudioModal = ({ open, onCancel, onSuccess }: CreateTTSAudioModalP
   const [voices, setVoices] = useState<Voice[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingVoices, setLoadingVoices] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
       fetchVoices();
       form.resetFields();
+      setImagePreview(null);
     }
   }, [open, form]);
 
@@ -43,6 +53,25 @@ const CreateTTSAudioModal = ({ open, onCancel, onSuccess }: CreateTTSAudioModalP
     } finally {
       setLoadingVoices(false);
     }
+  };
+
+  const handleImageUpload = async (file: File) => {
+    try {
+      setUploadingImage(true);
+      const response = await uploadFoodImageOnlyAPI(file);
+      if (response?.data?.imageUrl) {
+        form.setFieldsValue({ imageUrl: response.data.imageUrl });
+        setImagePreview(response.data.imageUrl);
+        message.success("Upload ảnh thành công!");
+        return false; // Prevent default upload
+      }
+    } catch (error: any) {
+      message.error("Upload ảnh thất bại: " + (error?.message || "Lỗi không xác định"));
+      logger.error("Upload image error:", error);
+    } finally {
+      setUploadingImage(false);
+    }
+    return false;
   };
 
   const handleSubmit = async (values: TTSRequest) => {
@@ -143,8 +172,39 @@ const CreateTTSAudioModal = ({ open, onCancel, onSuccess }: CreateTTSAudioModalP
           <TextArea rows={3} placeholder="Lịch sử, cách chế biến, điểm đặc biệt của món..." />
         </Form.Item>
 
-        <Form.Item name="imageUrl" label="Link ảnh minh họa">
-          <Input placeholder="https://..." />
+        <Form.Item name="imageUrl" label="Ảnh minh họa">
+          <Space direction="vertical" style={{ width: "100%" }}>
+            <Upload
+              beforeUpload={(file) => {
+                handleImageUpload(file);
+                return false; // Prevent default upload
+              }}
+              showUploadList={false}
+              accept="image/*"
+            >
+              <Button icon={<UploadOutlined />} loading={uploadingImage}>
+                {uploadingImage ? "Đang upload..." : "Upload ảnh lên S3"}
+              </Button>
+            </Upload>
+            {imagePreview && (
+              <div style={{ marginTop: 8 }}>
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  style={{ maxWidth: "100%", maxHeight: 200, borderRadius: 8, objectFit: "cover" }}
+                />
+              </div>
+            )}
+            <Input
+              placeholder="Hoặc nhập link ảnh trực tiếp (https://...)"
+              onChange={(e) => {
+                form.setFieldsValue({ imageUrl: e.target.value });
+                if (e.target.value) {
+                  setImagePreview(e.target.value);
+                }
+              }}
+            />
+          </Space>
         </Form.Item>
 
         <Form.Item

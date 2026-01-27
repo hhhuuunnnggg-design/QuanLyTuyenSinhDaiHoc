@@ -1,4 +1,4 @@
-import { deleteTTSAudioAPI, getTTSAudiosAPI, type TTSAudio } from "@/api/tts.api";
+import { deleteTTSAudioAPI, getImageUrl, getTTSAudiosAPI, type TTSAudio } from "@/api/tts.api";
 import Restricted from "@/components/common/restricted";
 import { config } from "@/config";
 import { API_ENDPOINTS } from "@/constants";
@@ -63,10 +63,11 @@ const TTSAudioTable = () => {
       key: "imageUrl",
       width: 90,
       hideInSearch: true,
-      render: (_: any, record: TTSAudio) =>
-        record.imageUrl ? (
+      render: (_: any, record: TTSAudio) => {
+        const imageUrl = getImageUrl(record.imageUrl);
+        return imageUrl ? (
           <img
-            src={record.imageUrl}
+            src={imageUrl}
             alt={record.foodName || "Ảnh món"}
             style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover" }}
           />
@@ -86,7 +87,8 @@ const TTSAudioTable = () => {
           >
             No image
           </div>
-        ),
+        );
+      },
     },
     {
       title: "Món ăn / Gian hàng",

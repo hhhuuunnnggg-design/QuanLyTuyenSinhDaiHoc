@@ -10,8 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.service.S3Service;
 
-import java.time.Duration;
-
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -30,9 +28,13 @@ public class S3ServiceImpl implements S3Service {
     @Value("${spring.aws.bucket-name:}")
     private String bucketName;
 
+    @Value("${spring.aws.region:ap-southeast-1}")
+    private String region;
+
     @Override
     public String uploadFile(MultipartFile file, String folderName) throws Exception {
-        String fileName = folderName + "/" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        String fileName = System.currentTimeMillis() + "_"
+                + (file.getOriginalFilename() != null ? file.getOriginalFilename() : "image.jpg");
         return uploadFile(file.getInputStream(), fileName, file.getContentType(), folderName);
     }
 
@@ -64,26 +66,27 @@ public class S3ServiceImpl implements S3Service {
 
     @Override
     public String getFileUrl(String fileName) {
-        return String.format("https://%s.s3.amazonaws.com/%s", bucketName, fileName);
+        // Format URL với region: https://bucket.s3.region.amazonaws.com/path
+        return String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, fileName);
     }
-    
+
     @Override
     public String getPresignedUrl(String fileName, int expirationMinutes) throws Exception {
         // Presigned URL sẽ được implement sau nếu cần
         throw new UnsupportedOperationException("Presigned URL chưa được implement");
     }
-    
+
     @Override
     public java.io.InputStream getFileInputStream(String fileName) throws Exception {
         if (s3Client == null) {
             throw new IllegalStateException("S3Client không khả dụng");
         }
-        
+
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
                 .key(fileName)
                 .build();
-        
+
         ResponseInputStream<GetObjectResponse> response = s3Client.getObject(getObjectRequest);
         return response;
     }

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.domain.TTSAudio;
 import com.example.demo.domain.dto.ResultPaginationDTO;
@@ -27,6 +28,7 @@ import com.example.demo.domain.request.tts.ReqTTSDTO;
 import com.example.demo.domain.response.tts.ResTTSAudioDTO;
 import com.example.demo.domain.response.tts.ResVoiceDTO;
 import com.example.demo.domain.response.tts.ResVoicesDTO;
+import com.example.demo.service.S3Service;
 import com.example.demo.service.TTSAudioService;
 import com.example.demo.service.TTSService;
 import com.example.demo.util.SecurityUtil;
@@ -42,10 +44,12 @@ public class TTSController {
 
     private final TTSService ttsService;
     private final TTSAudioService ttsAudioService;
+    private final S3Service s3Service;
 
-    public TTSController(TTSService ttsService, TTSAudioService ttsAudioService) {
+    public TTSController(TTSService ttsService, TTSAudioService ttsAudioService, S3Service s3Service) {
         this.ttsService = ttsService;
         this.ttsAudioService = ttsAudioService;
+        this.s3Service = s3Service;
     }
 
     @PostMapping("/synthesize")
@@ -330,6 +334,175 @@ public class TTSController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/audios/{id}/image")
+    @ApiMessage("Upload ảnh món ăn lên S3")
+    public ResponseEntity<ResTTSAudioDTO> uploadFoodImage(
+            @PathVariable Long id,
+            @RequestParam("image") MultipartFile imageFile)
+            throws IOException, IdInvalidException {
+
+        // Validate file
+        if (imageFile.isEmpty()) {
+            throw new IdInvalidException("File ảnh không được để trống");
+        }
+
+        // Validate file type
+        String contentType = imageFile.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IdInvalidException("File phải là ảnh (image/*)");
+        }
+
+        // Get audio
+        TTSAudio ttsAudio = ttsAudioService.getTTSAudioById(id);
+
+        // Delete old image from S3 if exists
+        if (ttsAudio.getImageUrl() != null && !ttsAudio.getImageUrl().isEmpty()) {
+            try {
+                // Extract file name from URL (handle cả URL có region và không có region)
+                String oldFileName = ttsAudio.getImageUrl();
+                // Pattern: https://bucket.s3.region.amazonaws.com/food-images/file.jpg
+                // hoặc: https://bucket.s3.amazonaws.com/food-images/file.jpg
+                if (oldFileName.contains("food-images/")) {
+                    oldFileName = oldFileName.substring(oldFileName.indexOf("food-images/"));
+                    s3Service.deleteFile(oldFileName);
+                    System.out.println("✅ Đã xóa ảnh cũ trên S3: " + oldFileName);
+                }
+            } catch (Exception e) {
+                System.err.println("⚠️  Không thể xóa ảnh cũ trên S3: " + e.getMessage());
+            }
+        }
+
+        // Upload new image to S3
+        String imageUrl;
+        try {
+            imageUrl = s3Service.uploadFile(imageFile, "food-images");
+            System.out.println("✅ Đã upload ảnh lên S3: " + imageUrl);
+        } catch (Exception e) {
+            throw new IOException("Không thể upload ảnh lên S3: " + e.getMessage(), e);
+        }
+
+        // Update imageUrl in database
+        ReqTTSDTO updateRequest = new ReqTTSDTO();
+        updateRequest.setText(ttsAudio.getText());
+        updateRequest.setVoice(ttsAudio.getVoice());
+        updateRequest.setSpeed(ttsAudio.getSpeed());
+        updateRequest.setTtsReturnOption(ttsAudio.getFormat());
+        updateRequest.setWithoutFilter(ttsAudio.getWithoutFilter());
+        updateRequest.setFoodName(ttsAudio.getFoodName());
+        updateRequest.setPrice(ttsAudio.getPrice());
+        updateRequest.setDescription(ttsAudio.getDescription());
+        updateRequest.setImageUrl(imageUrl);
+        updateRequest.setLatitude(ttsAudio.getLatitude());
+        updateRequest.setLongitude(ttsAudio.getLongitude());
+        updateRequest.setAccuracy(ttsAudio.getAccuracy());
+
+        TTSAudio updatedAudio = ttsAudioService.updateTTSAudio(id, updateRequest);
+        ResTTSAudioDTO dto = convertToDTO(updatedAudio);
+
+        System.out.println("========================================");
+        System.out.println("✅ ẢNH MÓN ĂN ĐÃ ĐƯỢC UPLOAD!");
+        System.out.println("🆔 Audio ID: " + dto.getId());
+        System.out.println("🖼️  Image URL: " + dto.getImageUrl());
+        System.out.println("========================================");
+
+        return ResponseEntity.ok(dto);
+    }
+
+    @PostMapping("/images/upload")
+    @ApiMessage("Upload ảnh món ăn lên S3 (không cần audio ID)")
+    public ResponseEntity<java.util.Map<String, String>> uploadFoodImageOnly(
+            @RequestParam("image") MultipartFile imageFile)
+            throws IOException, IdInvalidException {
+
+        // Validate file
+        if (imageFile.isEmpty()) {
+            throw new IdInvalidException("File ảnh không được để trống");
+        }
+
+        // Validate file type
+        String contentType = imageFile.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IdInvalidException("File phải là ảnh (image/*)");
+        }
+
+        // Upload image to S3
+        String imageUrl;
+        try {
+            imageUrl = s3Service.uploadFile(imageFile, "food-images");
+            System.out.println("✅ Đã upload ảnh lên S3: " + imageUrl);
+        } catch (Exception e) {
+            throw new IOException("Không thể upload ảnh lên S3: " + e.getMessage(), e);
+        }
+
+        java.util.Map<String, String> response = new java.util.HashMap<>();
+        response.put("imageUrl", imageUrl);
+        response.put("message", "Upload ảnh thành công");
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/images/{fileName:.+}")
+    @ApiMessage("Lấy ảnh từ S3")
+    public ResponseEntity<Resource> getFoodImage(@PathVariable String fileName)
+            throws IOException {
+
+        // Decode fileName nếu có encoding
+        String decodedFileName = java.net.URLDecoder.decode(fileName, java.nio.charset.StandardCharsets.UTF_8);
+
+        // Try multiple paths để handle cả duplicate folder case
+        String[] possiblePaths = {
+                decodedFileName, // Path như user gửi
+                decodedFileName.startsWith("food-images/") ? decodedFileName : "food-images/" + decodedFileName, // Thêm
+                                                                                                                 // prefix
+                                                                                                                 // nếu
+                                                                                                                 // chưa
+                                                                                                                 // có
+                decodedFileName.startsWith("food-images/food-images/") ? decodedFileName
+                        : "food-images/food-images/" + decodedFileName.replaceFirst("^food-images/", ""), // Handle
+                                                                                                          // duplicate
+                                                                                                          // folder
+        };
+
+        Resource resource = null;
+        String foundPath = null;
+
+        for (String path : possiblePaths) {
+            try {
+                resource = ttsAudioService.getImageResourceFromS3(path);
+                if (resource != null && resource.exists()) {
+                    foundPath = path;
+                    break;
+                }
+            } catch (Exception e) {
+                // Try next path
+                continue;
+            }
+        }
+
+        if (resource != null && resource.exists() && foundPath != null) {
+            // Determine content type from file extension
+            String contentType = "image/jpeg";
+            String lowerPath = foundPath.toLowerCase();
+            if (lowerPath.endsWith(".png")) {
+                contentType = "image/png";
+            } else if (lowerPath.endsWith(".gif")) {
+                contentType = "image/gif";
+            } else if (lowerPath.endsWith(".webp")) {
+                contentType = "image/webp";
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(org.springframework.http.MediaType.parseMediaType(contentType));
+            headers.setCacheControl("public, max-age=31536000"); // Cache 1 year
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(resource);
+        }
+
+        throw new IOException("Không tìm thấy ảnh. Đã thử các path: " + String.join(", ", possiblePaths));
+    }
+
     // Helper methods
     private String generateFileName(ReqTTSDTO request) {
         String textPreview = request.getText()
@@ -350,6 +523,9 @@ public class TTSController {
     }
 
     private ResTTSAudioDTO convertToDTO(TTSAudio ttsAudio) {
+        // Giữ nguyên S3 URL (bucket đã public)
+        String imageUrl = ttsAudio.getImageUrl();
+
         return ResTTSAudioDTO.builder()
                 .id(ttsAudio.getId())
                 .text(ttsAudio.getText())
@@ -367,7 +543,7 @@ public class TTSController {
                 .foodName(ttsAudio.getFoodName())
                 .price(ttsAudio.getPrice())
                 .description(ttsAudio.getDescription())
-                .imageUrl(ttsAudio.getImageUrl())
+                .imageUrl(imageUrl)
                 .latitude(ttsAudio.getLatitude())
                 .longitude(ttsAudio.getLongitude())
                 .accuracy(ttsAudio.getAccuracy())

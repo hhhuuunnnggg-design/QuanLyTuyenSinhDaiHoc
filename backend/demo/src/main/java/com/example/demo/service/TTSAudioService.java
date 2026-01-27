@@ -32,4 +32,6 @@ public interface TTSAudioService {
     void deleteTTSAudioFileFromS3(String fileName) throws IOException;
     
     Resource getAudioResourceFromS3(String fileName) throws IOException;
+    
+    Resource getImageResourceFromS3(String fileName) throws IOException;
 }

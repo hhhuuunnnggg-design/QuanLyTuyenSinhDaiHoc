@@ -261,6 +261,20 @@ public class TTSAudioServiceImpl implements TTSAudioService {
         }
     }
 
+    @Override
+    public Resource getImageResourceFromS3(String fileName) throws IOException {
+        if (s3Service == null) {
+            throw new IOException("S3Service không khả dụng");
+        }
+        
+        try {
+            InputStream inputStream = s3Service.getFileInputStream(fileName);
+            return new InputStreamResource(inputStream);
+        } catch (Exception e) {
+            throw new IOException("Không thể lấy ảnh từ S3: " + e.getMessage(), e);
+        }
+    }
+
     private ResTTSAudioDTO convertToDTO(TTSAudio ttsAudio) {
         return ResTTSAudioDTO.builder()
                 .id(ttsAudio.getId())
