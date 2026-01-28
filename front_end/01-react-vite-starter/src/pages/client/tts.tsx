@@ -251,14 +251,14 @@ const TTSPage = () => {
   }) => {
     const map = useMap();
     
-    useEffect(() => {
+  useEffect(() => {
       onMapReady(map);
       map.on("dragstart", () => {
         hasManualPanRef.current = true;
       });
     }, [map, onMapReady]);
     
-    useEffect(() => {
+  useEffect(() => {
       if (!position || hasManualPan) return;
       map.setView([position.lat, position.lng], map.getZoom(), { animate: true });
     }, [position?.lat, position?.lng, map, hasManualPan]);

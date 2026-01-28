@@ -7,6 +7,7 @@ import { TTSSidebar } from "./components/TTSSidebar";
 import { useAudioPlayer } from "./hooks/useAudioPlayer";
 import { useGeolocation } from "./hooks/useGeolocation";
 import { useMapPosition } from "./hooks/useMapPosition";
+import { useNarrationEngine } from "./hooks/useNarrationEngine";
 import { useTTSAudios } from "./hooks/useTTSAudios";
 import "./tts.scss";
 import { GeoPosition, ViewMode } from "./types";
@@ -53,7 +54,14 @@ const TTSPage = () => {
     [audios, selectedId]
   );
 
-  const { isPlaying, setIsPlaying, audioRef, handlePlayPause } = useAudioPlayer(selected, position);
+  // State cho auto-play từ Narration Engine
+  const [autoPlayAudioId, setAutoPlayAudioId] = useState<number | null>(null);
+
+  const { isPlaying, setIsPlaying, audioRef, handlePlayPause } = useAudioPlayer({
+    selected,
+    position,
+    autoPlayAudioId,
+  });
 
   // Sync position với mockLat/mockLng khi slider thay đổi
   useEffect(() => {
@@ -64,28 +72,24 @@ const TTSPage = () => {
     }
   }, [mockGps, mockLat, mockLng, position, setPosition]);
 
-  // Tự chọn điểm gần nhất trong bán kính
-  useEffect(() => {
-    if (!autoGuide || !position || audios.length === 0) return;
-
-    let bestId: number | null = null;
-    let bestDist = Infinity;
-
-    audios.forEach((audio) => {
-      if (audio.latitude != null && audio.longitude != null) {
-        const dist = haversineDistance(position, { lat: audio.latitude, lng: audio.longitude });
-        const radius = audio.accuracy ?? 50;
-        if (dist <= radius && dist < bestDist) {
-          bestDist = dist;
-          bestId = audio.id;
-        }
-      }
-    });
-
-    if (bestId != null && bestId !== selectedId) {
-      setSelectedId(bestId);
-    }
-  }, [autoGuide, position, audios, selectedId]);
+  // Narration Engine: Quản lý việc phát audio tự động theo luồng hoạt động
+  useNarrationEngine({
+    audios,
+    position,
+    autoGuide,
+    isPlaying,
+    cooldownMinutes: 5, // Cooldown 5 phút
+    onPOIDetected: (poiId) => {
+      // Geofence Engine đã phát hiện POI -> cập nhật selected
+      setSelectedId(poiId);
+    },
+    onShouldPlay: (audioId) => {
+      // Narration Engine quyết định phát -> set auto-play
+      setAutoPlayAudioId(audioId);
+      // Reset sau khi đã set để có thể trigger lại lần sau
+      setTimeout(() => setAutoPlayAudioId(null), 100);
+    },
+  });
 
   // Set initial selectedId
   useEffect(() => {
