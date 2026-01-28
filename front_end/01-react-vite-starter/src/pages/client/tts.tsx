@@ -3,7 +3,10 @@ import { config } from "@/config";
 import { API_ENDPOINTS } from "@/constants";
 import { CompassOutlined, PauseCircleOutlined, PlayCircleOutlined } from "@ant-design/icons";
 import { Button, message, Slider, Switch, Tooltip } from "antd";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { DivIcon, Map } from "leaflet";
+import "leaflet/dist/leaflet.css";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Circle, MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
 import "./tts.scss";
 
 interface GeoPosition {
@@ -39,13 +42,9 @@ const TTSPage = () => {
   const [mockLng, setMockLng] = useState<number | null>(null);
   const [latRange, setLatRange] = useState<{ min: number; max: number } | null>(null);
   const [lngRange, setLngRange] = useState<{ min: number; max: number } | null>(null);
-  const [mapZoom, setMapZoom] = useState(1);
-  const [mapOffset, setMapOffset] = useState({ x: 0, y: 0 });
-  const [isDraggingMarker, setIsDraggingMarker] = useState(false);
-  const [isPanning, setIsPanning] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const mapCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const lastPositionSourceRef = useRef<"gps" | "slider" | "drag">("gps"); // Track where position update came from
+  const mapRef = useRef<Map | null>(null);
+  const lastPositionSourceRef = useRef<"gps" | "slider" | "drag">("slider");
+  const hasManualPanRef = useRef(false);
 
   useEffect(() => {
     const fetch = async () => {
@@ -143,6 +142,17 @@ const TTSPage = () => {
     return () => navigator.geolocation.clearWatch(watcher);
   }, [autoGuide, mockGps, mockLat, mockLng]);
 
+  // Sync position với mockLat/mockLng khi slider thay đổi (chỉ khi đang dùng mock GPS)
+  useEffect(() => {
+    if (!mockGps || mockLat == null || mockLng == null) return;
+    
+    // Chỉ update position nếu giá trị thực sự thay đổi
+    if (position?.lat !== mockLat || position?.lng !== mockLng) {
+      setPosition({ lat: mockLat, lng: mockLng });
+      lastPositionSourceRef.current = "slider"; // Đánh dấu là từ slider
+    }
+  }, [mockGps, mockLat, mockLng]);
+
   // Tự chọn điểm gần nhất trong bán kính
   useEffect(() => {
     if (!autoGuide || !position || audios.length === 0) return;
@@ -233,319 +243,112 @@ const TTSPage = () => {
     return `${(d / 1000).toFixed(1)}km`;
   };
 
-  // Auto-center map only when:
-  // 1. Position changes from real GPS (not from slider/drag)
-  // 2. Map hasn't been manually panned/zoomed (still at default state)
-  // 3. Not currently dragging marker
-  useEffect(() => {
-    if (isDraggingMarker || !position || !latRange || !lngRange) return;
+  // Component để auto-center map khi position thay đổi và track manual pan
+  const MapCenter = ({ position, hasManualPan, onMapReady }: { 
+    position: GeoPosition | null; 
+    hasManualPan: boolean;
+    onMapReady: (map: Map) => void;
+  }) => {
+    const map = useMap();
     
-    // Don't auto-center if user has manually panned/zoomed the map
-    const hasManualInteraction = mapOffset.x !== 0 || mapOffset.y !== 0 || mapZoom !== 1;
-    if (hasManualInteraction) return;
-    
-    // Don't auto-center if position changed from slider or drag
-    // Only auto-center when position comes from real GPS
-    if (lastPositionSourceRef.current !== "gps") return;
-    
-    const canvas = mapCanvasRef.current;
-    if (!canvas) return;
-
-    // Normalize position to 0-1 range
-    const normalizedLat = (position.lat - latRange.min) / (latRange.max - latRange.min);
-    const normalizedLng = (position.lng - lngRange.min) / (lngRange.max - lngRange.min);
-    
-    // Calculate pixel position without offset
-    const worldX = normalizedLng * canvas.width;
-    const worldY = (1 - normalizedLat) * canvas.height;
-    
-    // Calculate offset needed to center this position
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const newOffsetX = centerX - worldX * mapZoom;
-    const newOffsetY = centerY - worldY * mapZoom;
-    
-    setMapOffset({ x: newOffsetX, y: newOffsetY });
-  }, [position?.lat, position?.lng, latRange, lngRange]); // Removed mapZoom from deps
-
-  // Convert lat/lng to pixel coordinates trên custom map
-  const latLngToPixel = (lat: number, lng: number) => {
-    if (!latRange || !lngRange) return { x: 0, y: 0 };
-    
-    // Normalize lat/lng to 0-1 range
-    const normalizedLat = (lat - latRange.min) / (latRange.max - latRange.min);
-    const normalizedLng = (lng - lngRange.min) / (lngRange.max - lngRange.min);
-    
-    // Convert to pixel với zoom và offset
-    const canvas = mapCanvasRef.current;
-    if (!canvas) return { x: 0, y: 0 };
-    
-    const width = canvas.width;
-    const height = canvas.height;
-    
-    const x = normalizedLng * width * mapZoom + mapOffset.x;
-    const y = (1 - normalizedLat) * height * mapZoom + mapOffset.y; // Flip Y axis
-    
-    return { x, y };
-  };
-
-  // Convert pixel to lat/lng
-  const pixelToLatLng = (x: number, y: number) => {
-    if (!latRange || !lngRange) return miniMapCenter || { lat: 0, lng: 0 };
-    
-    const canvas = mapCanvasRef.current;
-    if (!canvas) return miniMapCenter || { lat: 0, lng: 0 };
-    
-    const width = canvas.width;
-    const height = canvas.height;
-    
-    // Remove offset and zoom
-    const normalizedX = (x - mapOffset.x) / mapZoom;
-    const normalizedY = (y - mapOffset.y) / mapZoom;
-    
-    // Convert to 0-1 range
-    const lng = normalizedX / width;
-    const lat = 1 - normalizedY / height; // Flip Y axis
-    
-    // Convert to actual lat/lng
-    return {
-      lat: latRange.min + lat * (latRange.max - latRange.min),
-      lng: lngRange.min + lng * (lngRange.max - lngRange.min),
-    };
-  };
-
-  // Draw custom map
-  useEffect(() => {
-    const canvas = mapCanvasRef.current;
-    if (!canvas || !miniMapCenter || !latRange || !lngRange) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    // Set canvas size
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = rect.height;
-
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw background
-    ctx.fillStyle = "#e5e7eb";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Draw grid
-    ctx.strokeStyle = "#d1d5db";
-    ctx.lineWidth = 1;
-    const gridSize = 40 * mapZoom;
-    for (let x = -mapOffset.x % gridSize; x < canvas.width; x += gridSize) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, canvas.height);
-      ctx.stroke();
-    }
-    for (let y = -mapOffset.y % gridSize; y < canvas.height; y += gridSize) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(canvas.width, y);
-      ctx.stroke();
-    }
-
-    // Draw roads (horizontal and vertical)
-    ctx.strokeStyle = "#9ca3af";
-    ctx.lineWidth = 3 * mapZoom;
-    const roadSpacing = 120 * mapZoom;
-    for (let x = -mapOffset.x % roadSpacing; x < canvas.width; x += roadSpacing) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, canvas.height);
-      ctx.stroke();
-    }
-    for (let y = -mapOffset.y % roadSpacing; y < canvas.height; y += roadSpacing) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(canvas.width, y);
-      ctx.stroke();
-    }
-
-    // Draw food markers
-    audios
-      .filter((a) => a.latitude != null && a.longitude != null)
-      .forEach((audio) => {
-        const isSelected = audio.id === selected?.id;
-        const pos = latLngToPixel(audio.latitude!, audio.longitude!);
-        const radius = audio.accuracy ?? 30;
-        const radiusPixels = (radius / 0.5) * mapZoom; // approximate scale
-
-        // Draw activation radius (dashed circle)
-        ctx.strokeStyle = isSelected ? "#ff6b35" : "#9ca3af";
-        ctx.lineWidth = 2;
-        ctx.setLineDash([5, 5]);
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, radiusPixels, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        // Draw marker dot
-        ctx.fillStyle = isSelected ? "#ff6b35" : "#9ca3af";
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, isSelected ? 10 : 8, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = "white";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        // Draw label
-        const label = audio.foodName
-          ? audio.foodName.split(" ")[0].substring(0, 4)
-          : "Food";
-        ctx.fillStyle = isSelected ? "#ff6b35" : "#6b7280";
-        ctx.font = `${isSelected ? "bold" : "normal"} 11px sans-serif`;
-        ctx.textAlign = "center";
-        ctx.fillText(label, pos.x, pos.y - radiusPixels - 8);
+    useEffect(() => {
+      onMapReady(map);
+      map.on("dragstart", () => {
+        hasManualPanRef.current = true;
       });
-
-    // Draw user location marker (always at center)
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-
-    // Draw outer circle
-    ctx.fillStyle = "rgba(37, 99, 235, 0.1)";
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 20, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Draw middle circle
-    ctx.fillStyle = "rgba(37, 99, 235, 0.2)";
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 12, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Draw center dot
-    ctx.fillStyle = "#2563eb";
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 7, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "white";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    // Draw pointer
-    ctx.fillStyle = "#2563eb";
-    ctx.beginPath();
-    ctx.moveTo(centerX + 12, centerY);
-    ctx.lineTo(centerX + 20, centerY - 6);
-    ctx.lineTo(centerX + 20, centerY + 6);
-    ctx.closePath();
-    ctx.fill();
-  }, [audios, selected, miniMapCenter, latRange, lngRange, mapZoom, mapOffset, isDraggingMarker]);
-
-  // Handle map interactions
-  const handleMapMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = mapCanvasRef.current;
-    if (!canvas) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    // Check if clicking on user marker (center area)
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const dist = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
-
-    if (dist < 30) {
-      // Start dragging user marker
-      setIsDraggingMarker(true);
-      setDragStart({ x, y });
-    } else {
-      // Start panning
-      setIsPanning(true);
-      setDragStart({ x, y });
-    }
+    }, [map, onMapReady]);
+    
+    useEffect(() => {
+      if (!position || hasManualPan) return;
+      map.setView([position.lat, position.lng], map.getZoom(), { animate: true });
+    }, [position?.lat, position?.lng, map, hasManualPan]);
+    
+    return null;
   };
 
-  const handleMapMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = mapCanvasRef.current;
-    if (!canvas || (!isDraggingMarker && !isPanning)) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    if (isDraggingMarker) {
-      // Convert mouse position to lat/lng (using current map state)
-      const newPos = pixelToLatLng(x, y);
-      
-      // Update position
-      setMockLat(newPos.lat);
-      setMockLng(newPos.lng);
-      setPosition(newPos);
-      lastPositionSourceRef.current = "drag"; // Mark as drag update
-      setMockGps(true);
-      
-      // Recalculate offset to keep user marker at center
-      // We need to calculate where the new position would be on the map
-      // and adjust offset so it appears at center
-      if (latRange && lngRange) {
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-        
-        // Normalize new position to 0-1 range
-        const normalizedLat = (newPos.lat - latRange.min) / (latRange.max - latRange.min);
-        const normalizedLng = (newPos.lng - lngRange.min) / (lngRange.max - lngRange.min);
-        
-        // Calculate pixel position without offset
-        const worldX = normalizedLng * canvas.width;
-        const worldY = (1 - normalizedLat) * canvas.height;
-        
-        // Calculate offset needed to center this position
-        const newOffsetX = centerX - worldX * mapZoom;
-        const newOffsetY = centerY - worldY * mapZoom;
-        
-        setMapOffset({ x: newOffsetX, y: newOffsetY });
-      }
-    } else if (isPanning) {
-      // Pan map (smooth)
-      const dx = x - dragStart.x;
-      const dy = y - dragStart.y;
-      setMapOffset({
-        x: mapOffset.x + dx,
-        y: mapOffset.y + dy,
-      });
-      setDragStart({ x, y });
-    }
+  // Custom icon cho user marker
+  const createUserIcon = () => {
+    return new DivIcon({
+      className: "custom-user-marker",
+      html: `
+        <div style="
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          background: rgba(37, 99, 235, 0.1);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+        ">
+          <div style="
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(37, 99, 235, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          ">
+            <div style="
+              width: 14px;
+              height: 14px;
+              border-radius: 50%;
+              background: #2563eb;
+              border: 2px solid white;
+            "></div>
+          </div>
+          <div style="
+            position: absolute;
+            right: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 12px solid #2563eb;
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+          "></div>
+        </div>
+      `,
+      iconSize: [40, 40],
+      iconAnchor: [20, 20],
+    });
   };
 
-  const handleMapMouseUp = () => {
-    setIsDraggingMarker(false);
-    setIsPanning(false);
-  };
-
-  const handleMapWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
-    e.preventDefault();
-    const canvas = mapCanvasRef.current;
-    if (!canvas) return;
-
-    // Get mouse position relative to canvas
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    // Zoom factor (smaller step for smoother zoom)
-    const zoomFactor = e.deltaY > 0 ? 0.95 : 1.05;
-    const newZoom = Math.max(0.5, Math.min(3, mapZoom * zoomFactor));
-
-    // Calculate zoom point in world coordinates
-    const worldX = (mouseX - mapOffset.x) / mapZoom;
-    const worldY = (mouseY - mapOffset.y) / mapZoom;
-
-    // Adjust offset to zoom into mouse position
-    const newOffsetX = mouseX - worldX * newZoom;
-    const newOffsetY = mouseY - worldY * newZoom;
-
-    setMapZoom(newZoom);
-    setMapOffset({ x: newOffsetX, y: newOffsetY });
+  // Custom icon cho food markers
+  const createFoodIcon = (isSelected: boolean, label: string) => {
+    return new DivIcon({
+      className: "custom-food-marker",
+      html: `
+        <div style="
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        ">
+          <div style="
+            width: ${isSelected ? 20 : 16}px;
+            height: ${isSelected ? 20 : 16}px;
+            border-radius: 50%;
+            background: ${isSelected ? "#ff6b35" : "#9ca3af"};
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          "></div>
+          <div style="
+            margin-top: 4px;
+            padding: 2px 6px;
+            background: ${isSelected ? "#ff6b35" : "#6b7280"};
+            color: white;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: ${isSelected ? "bold" : "normal"};
+            white-space: nowrap;
+          ">${label}</div>
+        </div>
+      `,
+      iconSize: [60, 40],
+      iconAnchor: [30, 20],
+    });
   };
 
   // Dừng audio nếu đã ra khỏi bán kính kích hoạt
@@ -810,69 +613,103 @@ const TTSPage = () => {
             </div>
 
             <div className="gps-map-frame">
-              <canvas
-                ref={mapCanvasRef}
-                className={`custom-map-canvas ${isDraggingMarker ? "dragging-marker" : ""}`}
-                onMouseDown={handleMapMouseDown}
-                onMouseMove={handleMapMouseMove}
-                onMouseUp={handleMapMouseUp}
-                onMouseLeave={handleMapMouseUp}
-                onWheel={handleMapWheel}
-              />
+              {miniMapCenter && (
+                <MapContainer
+                  center={[miniMapCenter.lat, miniMapCenter.lng]}
+                  zoom={18}
+                  style={{ height: "100%", width: "100%", zIndex: 0 }}
+                  zoomControl={true}
+                  scrollWheelZoom={true}
+                  doubleClickZoom={true}
+                  dragging={true}
+                  touchZoom={true}
+                  boxZoom={true}
+                  keyboard={true}
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  <MapCenter 
+                    position={position} 
+                    hasManualPan={hasManualPanRef.current}
+                    onMapReady={(map) => {
+                      mapRef.current = map;
+                    }}
+                  />
+                  
+                  {/* User location marker */}
+                  {position && (
+                    <Marker
+                      position={[position.lat, position.lng]}
+                      icon={createUserIcon()}
+                      draggable={true}
+                      eventHandlers={{
+                        dragend: (e) => {
+                          const marker = e.target;
+                          const newPos = marker.getLatLng();
+                          setMockLat(newPos.lat);
+                          setMockLng(newPos.lng);
+                          setPosition({ lat: newPos.lat, lng: newPos.lng });
+                          lastPositionSourceRef.current = "drag";
+                          setMockGps(true);
+                        },
+                      }}
+                    />
+                  )}
+
+                  {/* Food markers and circles */}
+                  {audios
+                    .filter((a) => a.latitude != null && a.longitude != null)
+                    .map((audio) => {
+                      const isSelected = audio.id === selected?.id;
+                      const radius = audio.accuracy ?? 30;
+                      const label = audio.foodName
+                        ? audio.foodName.split(" ")[0].substring(0, 4)
+                        : "Food";
+
+                      return (
+                        <React.Fragment key={audio.id}>
+                          <Circle
+                            center={[audio.latitude!, audio.longitude!]}
+                            radius={radius}
+                            pathOptions={{
+                              color: isSelected ? "#ff6b35" : "#9ca3af",
+                              fillColor: isSelected ? "#ff6b35" : "#9ca3af",
+                              fillOpacity: 0.1,
+                              weight: 2,
+                              dashArray: "5, 5",
+                            }}
+                          />
+                          <Marker
+                            position={[audio.latitude!, audio.longitude!]}
+                            icon={createFoodIcon(isSelected, label)}
+                            eventHandlers={{
+                              click: () => {
+                                handleSelect(audio.id);
+                              },
+                            }}
+                          />
+                        </React.Fragment>
+                      );
+                    })}
+                </MapContainer>
+              )}
               <div className="map-controls">
                 <Button
                   size="small"
                   onClick={() => {
-                    const canvas = mapCanvasRef.current;
-                    if (!canvas) return;
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    const worldX = (centerX - mapOffset.x) / mapZoom;
-                    const worldY = (centerY - mapOffset.y) / mapZoom;
-                    const newZoom = Math.min(3, mapZoom * 1.15);
-                    setMapZoom(newZoom);
-                    setMapOffset({
-                      x: centerX - worldX * newZoom,
-                      y: centerY - worldY * newZoom,
-                    });
-                  }}
-                  title="Zoom in"
-                >
-                  +
-                </Button>
-                <Button
-                  size="small"
-                  onClick={() => {
-                    const canvas = mapCanvasRef.current;
-                    if (!canvas) return;
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    const worldX = (centerX - mapOffset.x) / mapZoom;
-                    const worldY = (centerY - mapOffset.y) / mapZoom;
-                    const newZoom = Math.max(0.5, mapZoom * 0.85);
-                    setMapZoom(newZoom);
-                    setMapOffset({
-                      x: centerX - worldX * newZoom,
-                      y: centerY - worldY * newZoom,
-                    });
-                  }}
-                  title="Zoom out"
-                >
-                  −
-                </Button>
-                <Button
-                  size="small"
-                  onClick={() => {
-                    setMapOffset({ x: 0, y: 0 });
-                    setMapZoom(1);
+                    if (mapRef.current && position) {
+                      mapRef.current.setView([position.lat, position.lng], mapRef.current.getZoom(), {
+                        animate: true,
+                      });
+                      hasManualPanRef.current = false;
+                    }
                   }}
                   title="Reset view"
                 >
                   ⟲
                 </Button>
-                <div className="zoom-level" title="Zoom level">
-                  {Math.round(mapZoom * 100)}%
-                </div>
               </div>
             </div>
           </div>

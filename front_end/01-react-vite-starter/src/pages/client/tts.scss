@@ -496,3 +496,34 @@
   color: #4b5563;
   padding: 0 8px;
 }
+
+// Leaflet map styles
+.gps-map-frame {
+  .leaflet-container {
+    background: #dde3f2;
+    font-family: inherit;
+  }
+
+  .leaflet-control-zoom {
+    display: block; // Show zoom controls
+  }
+
+  .custom-user-marker {
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .custom-food-marker {
+    background: transparent !important;
+    border: none !important;
+    cursor: pointer;
+  }
+
+  .leaflet-marker-icon {
+    cursor: pointer;
+  }
+
+  .leaflet-dragging .leaflet-marker-draggable {
+    cursor: move !important;
+  }
+}
